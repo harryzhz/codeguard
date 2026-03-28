@@ -1,0 +1,26 @@
+{
+  "hooks": [
+    {
+      "event": "Stop",
+      "description": "Auto-trigger ReviewAgent when main agent completes",
+      "action": {
+        "type": "launch_agent",
+        "agent": "review-agent",
+        "env": {
+          "CODEGUARD_REVIEW_SCOPE": "task"
+        }
+      }
+    },
+    {
+      "event": "SubagentStop",
+      "description": "Upload review results when ReviewAgent completes",
+      "filter": {
+        "agent": "review-agent"
+      },
+      "action": {
+        "type": "run_script",
+        "script": "hooks/scripts/upload-result.sh"
+      }
+    }
+  ]
+}
