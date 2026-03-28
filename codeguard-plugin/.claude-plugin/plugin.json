@@ -2,6 +2,8 @@
   "name": "codeguard",
   "version": "0.2.0",
   "description": "Automatic code review agent that produces evidence-backed findings with structured JSON reports.",
-  "author": "CodeGuard",
+  "author": {
+    "name": "CodeGuard"
+  },
   "license": "MIT"
 }
