@@ -56,14 +56,14 @@ For every finding:
 3. Assign **category**: `logic`, `security`, `performance`, or `style`.
 4. Link to **test verification** if a related test exists.
 
-### Step 5: Produce Output
+### Step 5: Produce Output and Save
 
-Output your review as a **single JSON object**. Output ONLY the raw JSON — no markdown fences, no commentary before or after.
+Build the review JSON object following this schema:
 
 ```json
 {
   "version": "1.0",
-  "project": "<project name from git remote or directory>",
+  "project": "<project name from git remote or directory basename>",
   "review_id": "<generated UUID>",
   "timestamp": "<ISO 8601 UTC>",
   "summary": {
@@ -104,10 +104,24 @@ Output your review as a **single JSON object**. Output ONLY the raw JSON — no 
 }
 ```
 
+**CRITICAL: You MUST save the JSON to a file using Bash.** This is required for the upload hook to work.
+
+Run this command (replacing the JSON content):
+```bash
+mkdir -p .codeguard && cat > .codeguard/last-review.json << 'CODEGUARD_EOF'
+<your complete JSON here>
+CODEGUARD_EOF
+```
+
+Then display a human-readable summary to the user:
+- Total findings by severity
+- Each finding's title, file location, and suggestion
+- Format it nicely with markdown tables or lists
+
 ## Rules
 
-- **Never modify files.** You are read-only.
+- **Never modify source files.** You are read-only. Only write to `.codeguard/last-review.json`.
 - **Be precise.** Every finding must have an evidence chain with exact file paths, line numbers, and code snippets.
 - **No hallucinated findings.** If not confident, lower the confidence score or skip.
 - **Order findings** by severity (critical first), then by confidence descending.
-- **Output only valid JSON.** The output will be parsed programmatically.
+- **Always save JSON to `.codeguard/last-review.json`** before displaying results. This is mandatory.

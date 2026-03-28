@@ -3,7 +3,8 @@
   "version": "0.2.0",
   "description": "Automatic code review agent that produces evidence-backed findings with structured JSON reports.",
   "author": {
-    "name": "CodeGuard"
+    "name": "Harry Zhang",
+    "email": "haiyang.index@gmail.com"
   },
   "license": "MIT"
 }
