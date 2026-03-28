@@ -1,38 +1,16 @@
 from __future__ import annotations
 
-import uuid
-
 import pytest
-import pytest_asyncio
-from httpx import ASGITransport, AsyncClient
-
-from app.api.deps import set_repository
-from app.main import create_app
-from app.models import ProjectCreate
-from app.storage.postgres import PostgresReviewRepository
+from httpx import AsyncClient
 
 
 pytestmark = pytest.mark.asyncio
 
 
-@pytest_asyncio.fixture()
-async def client(repo: PostgresReviewRepository):
-    set_repository(repo)
-    app = create_app()
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as c:
-        yield c
-
-
-@pytest_asyncio.fixture()
-async def project_with_key(repo: PostgresReviewRepository):
-    p = await repo.create_project(ProjectCreate(name="review-proj"))
-    return p
-
-
-async def test_create_review_authenticated(client: AsyncClient, project_with_key):
+async def test_create_review_authenticated(client: AsyncClient):
+    await client.post("/api/v1/projects", json={"name": "review-proj"})
     resp = await client.post(
-        "/api/v1/reviews/",
+        "/api/v1/projects/review-proj/reviews",
         json={
             "version": "1.0",
             "summary": {"total": 1},
@@ -49,7 +27,7 @@ async def test_create_review_authenticated(client: AsyncClient, project_with_key
                 }
             ],
         },
-        headers={"Authorization": f"Bearer {project_with_key.api_key}"},
+        headers={"Authorization": "Bearer test-api-key"},
     )
     assert resp.status_code == 201
     data = resp.json()
@@ -58,42 +36,50 @@ async def test_create_review_authenticated(client: AsyncClient, project_with_key
 
 
 async def test_create_review_unauthenticated(client: AsyncClient):
+    await client.post("/api/v1/projects", json={"name": "review-proj2"})
     resp = await client.post(
-        "/api/v1/reviews/",
+        "/api/v1/projects/review-proj2/reviews",
         json={"version": "1.0"},
         headers={"Authorization": "Bearer bad-key"},
     )
     assert resp.status_code == 401
 
 
-async def test_list_reviews(client: AsyncClient, project_with_key):
-    headers = {"Authorization": f"Bearer {project_with_key.api_key}"}
-    await client.post(
-        "/api/v1/reviews/",
+async def test_create_review_no_bearer(client: AsyncClient):
+    await client.post("/api/v1/projects", json={"name": "review-proj3"})
+    resp = await client.post(
+        "/api/v1/projects/review-proj3/reviews",
         json={"version": "1.0"},
-        headers=headers,
     )
-    resp = await client.get(
-        "/api/v1/reviews/",
-        params={"project_id": str(project_with_key.id)},
+    assert resp.status_code == 401
+
+
+async def test_list_reviews(client: AsyncClient):
+    await client.post("/api/v1/projects", json={"name": "review-proj4"})
+    await client.post(
+        "/api/v1/projects/review-proj4/reviews",
+        json={"version": "1.0"},
+        headers={"Authorization": "Bearer test-api-key"},
     )
+    resp = await client.get("/api/v1/projects/review-proj4/reviews")
     assert resp.status_code == 200
     assert len(resp.json()) >= 1
 
 
-async def test_get_review(client: AsyncClient, project_with_key):
-    headers = {"Authorization": f"Bearer {project_with_key.api_key}"}
+async def test_get_review(client: AsyncClient):
+    await client.post("/api/v1/projects", json={"name": "review-proj5"})
     create_resp = await client.post(
-        "/api/v1/reviews/",
+        "/api/v1/projects/review-proj5/reviews",
         json={"version": "1.0"},
-        headers=headers,
+        headers={"Authorization": "Bearer test-api-key"},
     )
     rid = create_resp.json()["id"]
-    resp = await client.get(f"/api/v1/reviews/{rid}")
+    resp = await client.get(f"/api/v1/projects/review-proj5/reviews/{rid}")
     assert resp.status_code == 200
     assert resp.json()["id"] == rid
 
 
 async def test_get_review_not_found(client: AsyncClient):
-    resp = await client.get(f"/api/v1/reviews/{uuid.uuid4()}")
+    await client.post("/api/v1/projects", json={"name": "review-proj6"})
+    resp = await client.get("/api/v1/projects/review-proj6/reviews/nonexistent")
     assert resp.status_code == 404

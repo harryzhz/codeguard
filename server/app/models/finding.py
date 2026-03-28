@@ -1,5 +1,4 @@
 from __future__ import annotations
-import uuid
 from datetime import datetime
 from typing import Any, Literal
 from pydantic import BaseModel, Field
@@ -18,8 +17,8 @@ class FindingStatusUpdate(BaseModel):
     status: Literal["accepted", "dismissed"]
 
 class FindingResponse(BaseModel):
-    id: uuid.UUID
-    review_id: uuid.UUID
+    id: str
+    review_id: str
     severity: str
     confidence: float
     title: str

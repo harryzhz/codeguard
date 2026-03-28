@@ -1,29 +1,25 @@
 from __future__ import annotations
-import uuid
 from datetime import datetime, timezone
 from sqlalchemy import Float, ForeignKey, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.types import JSON
 
-class GUID(String):
-    """Store UUID as 36-char string for SQLite compatibility."""
-    def __init__(self):
-        super().__init__(36)
+from app.utils import generate_short_id
+
 
 class Base(DeclarativeBase):
     pass
 
 class ProjectRow(Base):
     __tablename__ = "projects"
-    id: Mapped[str] = mapped_column(GUID(), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id: Mapped[str] = mapped_column(String(12), primary_key=True, default=generate_short_id)
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    api_key: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc))
     reviews: Mapped[list["ReviewRow"]] = relationship(back_populates="project", cascade="all, delete-orphan")
 
 class ReviewRow(Base):
     __tablename__ = "reviews"
-    id: Mapped[str] = mapped_column(GUID(), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id: Mapped[str] = mapped_column(String(12), primary_key=True, default=generate_short_id)
     project_id: Mapped[str] = mapped_column(ForeignKey("projects.id"), nullable=False)
     version: Mapped[str] = mapped_column(String(50), nullable=False, default="1.0")
     summary: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
@@ -34,7 +30,7 @@ class ReviewRow(Base):
 
 class FindingRow(Base):
     __tablename__ = "findings"
-    id: Mapped[str] = mapped_column(GUID(), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id: Mapped[str] = mapped_column(String(12), primary_key=True, default=generate_short_id)
     review_id: Mapped[str] = mapped_column(ForeignKey("reviews.id"), nullable=False)
     severity: Mapped[str] = mapped_column(String(20), nullable=False)
     confidence: Mapped[float] = mapped_column(Float, nullable=False)

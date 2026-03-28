@@ -1,19 +1,17 @@
 from __future__ import annotations
 
-import uuid
-
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.deps import get_repository
 from app.models import FindingResponse, FindingStatusUpdate
 from app.storage.base import ReviewRepository
 
-router = APIRouter(prefix="/findings", tags=["findings"])
+router = APIRouter(tags=["findings"])
 
 
 @router.patch("/{finding_id}", response_model=FindingResponse)
 async def update_finding_status(
-    finding_id: uuid.UUID,
+    finding_id: str,
     data: FindingStatusUpdate,
     repo: ReviewRepository = Depends(get_repository),
 ):

@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-import uuid
-
 import pytest
-import pytest_asyncio
 
 from app.models import (
     FindingCreate,
@@ -19,7 +16,7 @@ pytestmark = pytest.mark.asyncio
 async def test_create_and_get_project(repo: PostgresReviewRepository):
     p = await repo.create_project(ProjectCreate(name="proj1"))
     assert p.name == "proj1"
-    assert p.api_key  # non-empty
+    assert isinstance(p.id, str)
 
     fetched = await repo.get_project(p.id)
     assert fetched is not None
@@ -27,16 +24,16 @@ async def test_create_and_get_project(repo: PostgresReviewRepository):
 
 
 async def test_get_project_not_found(repo: PostgresReviewRepository):
-    assert await repo.get_project(uuid.uuid4()) is None
+    assert await repo.get_project("nonexistent") is None
 
 
-async def test_get_project_by_api_key(repo: PostgresReviewRepository):
+async def test_get_project_by_name(repo: PostgresReviewRepository):
     p = await repo.create_project(ProjectCreate(name="proj2"))
-    fetched = await repo.get_project_by_api_key(p.api_key)
+    fetched = await repo.get_project_by_name("proj2")
     assert fetched is not None
     assert fetched.id == p.id
 
-    assert await repo.get_project_by_api_key("nonexistent") is None
+    assert await repo.get_project_by_name("nonexistent") is None
 
 
 async def test_list_projects(repo: PostgresReviewRepository):
@@ -83,7 +80,7 @@ async def test_get_review(repo: PostgresReviewRepository):
 
 
 async def test_get_review_not_found(repo: PostgresReviewRepository):
-    assert await repo.get_review(uuid.uuid4()) is None
+    assert await repo.get_review("nonexistent") is None
 
 
 async def test_list_reviews(repo: PostgresReviewRepository):
@@ -119,5 +116,5 @@ async def test_update_finding_status(repo: PostgresReviewRepository):
 
 
 async def test_update_finding_status_not_found(repo: PostgresReviewRepository):
-    result = await repo.update_finding_status(uuid.uuid4(), "dismissed")
+    result = await repo.update_finding_status("nonexistent", "dismissed")
     assert result is None

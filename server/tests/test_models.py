@@ -1,4 +1,3 @@
-import uuid
 from datetime import datetime, timezone
 
 import pytest
@@ -28,17 +27,27 @@ def test_project_create_empty_name():
         ProjectCreate(name="")
 
 
+def test_project_create_invalid_name():
+    with pytest.raises(ValidationError):
+        ProjectCreate(name="bad name with spaces")
+
+
+def test_project_create_valid_chars():
+    p = ProjectCreate(name="my_project-123")
+    assert p.name == "my_project-123"
+
+
 # ── ProjectResponse ──
 
 def test_project_response():
     now = datetime.now(timezone.utc)
     pr = ProjectResponse(
-        id=uuid.uuid4(),
+        id="abc123",
         name="p",
-        api_key="key-123",
         created_at=now,
     )
-    assert pr.api_key == "key-123"
+    assert pr.id == "abc123"
+    assert pr.name == "p"
 
 
 # ── FindingCreate ──
@@ -87,8 +96,8 @@ def test_finding_status_update_invalid():
 def test_finding_response():
     now = datetime.now(timezone.utc)
     fr = FindingResponse(
-        id=uuid.uuid4(),
-        review_id=uuid.uuid4(),
+        id="find-123",
+        review_id="rev-456",
         severity="critical",
         confidence=0.9,
         title="Test finding",
@@ -138,8 +147,8 @@ def test_review_create_defaults():
 def test_review_response():
     now = datetime.now(timezone.utc)
     rr = ReviewResponse(
-        id=uuid.uuid4(),
-        project_id=uuid.uuid4(),
+        id="rev-123",
+        project_id="proj-456",
         version="1.0",
         summary={},
         files_changed=[],
@@ -153,8 +162,8 @@ def test_review_response():
 def test_review_detail_response():
     now = datetime.now(timezone.utc)
     rd = ReviewDetailResponse(
-        id=uuid.uuid4(),
-        project_id=uuid.uuid4(),
+        id="rev-123",
+        project_id="proj-456",
         version="1.0",
         summary={},
         files_changed=[],

@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import secrets
-import uuid
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.orm import selectinload
@@ -28,23 +25,20 @@ class PostgresReviewRepository(ReviewRepository):
 
     async def create_project(self, data: ProjectCreate) -> ProjectResponse:
         async with self._sf() as session:
-            row = ProjectRow(
-                name=data.name,
-                api_key=secrets.token_urlsafe(32),
-            )
+            row = ProjectRow(name=data.name)
             session.add(row)
             await session.commit()
             await session.refresh(row)
             return ProjectResponse.model_validate(row)
 
-    async def get_project(self, project_id: uuid.UUID) -> ProjectResponse | None:
+    async def get_project(self, project_id: str) -> ProjectResponse | None:
         async with self._sf() as session:
-            row = await session.get(ProjectRow, str(project_id))
+            row = await session.get(ProjectRow, project_id)
             return ProjectResponse.model_validate(row) if row else None
 
-    async def get_project_by_api_key(self, api_key: str) -> ProjectResponse | None:
+    async def get_project_by_name(self, name: str) -> ProjectResponse | None:
         async with self._sf() as session:
-            stmt = select(ProjectRow).where(ProjectRow.api_key == api_key)
+            stmt = select(ProjectRow).where(ProjectRow.name == name)
             row = (await session.execute(stmt)).scalar_one_or_none()
             return ProjectResponse.model_validate(row) if row else None
 
@@ -57,11 +51,11 @@ class PostgresReviewRepository(ReviewRepository):
     # ── Reviews ──
 
     async def create_review(
-        self, project_id: uuid.UUID, data: ReviewCreate
+        self, project_id: str, data: ReviewCreate
     ) -> ReviewDetailResponse:
         async with self._sf() as session:
             review = ReviewRow(
-                project_id=str(project_id),
+                project_id=project_id,
                 version=data.version,
                 summary=data.summary,
                 files_changed=data.files_changed,
@@ -102,12 +96,12 @@ class PostgresReviewRepository(ReviewRepository):
                 created_at=review.created_at,
             )
 
-    async def get_review(self, review_id: uuid.UUID) -> ReviewDetailResponse | None:
+    async def get_review(self, review_id: str) -> ReviewDetailResponse | None:
         async with self._sf() as session:
             stmt = (
                 select(ReviewRow)
                 .options(selectinload(ReviewRow.findings))
-                .where(ReviewRow.id == str(review_id))
+                .where(ReviewRow.id == review_id)
             )
             review = (await session.execute(stmt)).scalar_one_or_none()
             if not review:
@@ -122,11 +116,11 @@ class PostgresReviewRepository(ReviewRepository):
                 created_at=review.created_at,
             )
 
-    async def list_reviews(self, project_id: uuid.UUID) -> list[ReviewResponse]:
+    async def list_reviews(self, project_id: str) -> list[ReviewResponse]:
         async with self._sf() as session:
             stmt = (
                 select(ReviewRow)
-                .where(ReviewRow.project_id == str(project_id))
+                .where(ReviewRow.project_id == project_id)
                 .order_by(ReviewRow.created_at)
             )
             rows = (await session.execute(stmt)).scalars().all()
@@ -145,10 +139,10 @@ class PostgresReviewRepository(ReviewRepository):
     # ── Findings ──
 
     async def update_finding_status(
-        self, finding_id: uuid.UUID, status: str
+        self, finding_id: str, status: str
     ) -> FindingResponse | None:
         async with self._sf() as session:
-            row = await session.get(FindingRow, str(finding_id))
+            row = await session.get(FindingRow, finding_id)
             if not row:
                 return None
             row.status = status

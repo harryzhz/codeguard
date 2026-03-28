@@ -1,34 +1,18 @@
 from __future__ import annotations
 
-import uuid
-
 import pytest
 import pytest_asyncio
-from httpx import ASGITransport, AsyncClient
-
-from app.api.deps import set_repository
-from app.main import create_app
-from app.models import ProjectCreate
-from app.storage.postgres import PostgresReviewRepository
+from httpx import AsyncClient
 
 
 pytestmark = pytest.mark.asyncio
 
 
 @pytest_asyncio.fixture()
-async def client(repo: PostgresReviewRepository):
-    set_repository(repo)
-    app = create_app()
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as c:
-        yield c
-
-
-@pytest_asyncio.fixture()
-async def finding_id(client: AsyncClient, repo: PostgresReviewRepository):
-    p = await repo.create_project(ProjectCreate(name="fp"))
+async def finding_id(client: AsyncClient):
+    await client.post("/api/v1/projects", json={"name": "fp"})
     resp = await client.post(
-        "/api/v1/reviews/",
+        "/api/v1/projects/fp/reviews",
         json={
             "version": "1.0",
             "findings": [
@@ -43,7 +27,7 @@ async def finding_id(client: AsyncClient, repo: PostgresReviewRepository):
                 }
             ],
         },
-        headers={"Authorization": f"Bearer {p.api_key}"},
+        headers={"Authorization": "Bearer test-api-key"},
     )
     return resp.json()["findings"][0]["id"]
 
@@ -59,7 +43,7 @@ async def test_update_finding_status(client: AsyncClient, finding_id: str):
 
 async def test_update_finding_not_found(client: AsyncClient):
     resp = await client.patch(
-        f"/api/v1/findings/{uuid.uuid4()}",
+        "/api/v1/findings/nonexistent",
         json={"status": "dismissed"},
     )
     assert resp.status_code == 404

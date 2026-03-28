@@ -1,5 +1,4 @@
 from __future__ import annotations
-import uuid
 from datetime import datetime
 from typing import Any
 from pydantic import BaseModel, Field
@@ -12,8 +11,8 @@ class ReviewCreate(BaseModel):
     findings: list[FindingCreate] = Field(default_factory=list)
 
 class ReviewResponse(BaseModel):
-    id: uuid.UUID
-    project_id: uuid.UUID
+    id: str
+    project_id: str
     version: str
     summary: dict[str, Any]
     files_changed: list[str]
