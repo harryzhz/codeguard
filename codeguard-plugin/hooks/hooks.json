@@ -4,16 +4,10 @@
       {
         "hooks": [
           {
-            "type": "command",
-            "command": "echo '[CodeGuard] Task complete. Run /codeguard:review to trigger a code review.'"
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "matcher": "review-agent",
-        "hooks": [
+            "type": "agent",
+            "prompt": "You are CodeGuard ReviewAgent. CODEGUARD_REVIEW_SCOPE=task. 1) Identify files changed in this task from conversation context. 2) Read each file fully. 3) Check for: logic errors, security issues, performance problems, style issues. 4) For each finding build an evidence chain (file, line, snippet, observation). 5) Write the complete JSON review to .codeguard/last-review.json via Bash (mkdir -p .codeguard && cat > .codeguard/last-review.json << 'CODEGUARD_EOF' ... CODEGUARD_EOF). The JSON must follow this schema: {version, project, review_id, timestamp, summary:{files_reviewed, total_findings, critical, warning, style, tests_run, tests_passed, tests_failed}, files_changed, findings:[{severity, confidence, title, description, category, evidence_chain:[{step, file, line, snippet, observation}], test_verification:{status, test_name, output}, suggestion}]}. 6) Display a human-readable summary with severity counts and finding details.",
+            "timeout": 180
+          },
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/upload-result.sh"
