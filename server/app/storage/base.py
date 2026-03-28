@@ -1,59 +1,24 @@
 from __future__ import annotations
-
-import uuid
 from abc import ABC, abstractmethod
-
-from app.models import (
-    FindingResponse,
-    FindingStatusUpdate,
-    ProjectCreate,
-    ProjectResponse,
-    ReviewCreate,
-    ReviewDetailResponse,
-    ReviewResponse,
-)
-
+import uuid
+from app.models.project import ProjectCreate, ProjectResponse
+from app.models.review import ReviewCreate, ReviewDetailResponse, ReviewResponse
+from app.models.finding import FindingResponse
 
 class ReviewRepository(ABC):
-
-    # ── Projects ──
-
     @abstractmethod
-    async def create_project(self, data: ProjectCreate) -> ProjectResponse:
-        ...
-
+    async def create_project(self, data: ProjectCreate) -> ProjectResponse: ...
     @abstractmethod
-    async def get_project(self, project_id: uuid.UUID) -> ProjectResponse | None:
-        ...
-
+    async def get_project(self, project_id: uuid.UUID) -> ProjectResponse | None: ...
     @abstractmethod
-    async def get_project_by_api_key(self, api_key: str) -> ProjectResponse | None:
-        ...
-
+    async def get_project_by_api_key(self, api_key: str) -> ProjectResponse | None: ...
     @abstractmethod
-    async def list_projects(self) -> list[ProjectResponse]:
-        ...
-
-    # ── Reviews ──
-
+    async def list_projects(self) -> list[ProjectResponse]: ...
     @abstractmethod
-    async def create_review(
-        self, project_id: uuid.UUID, data: ReviewCreate
-    ) -> ReviewDetailResponse:
-        ...
-
+    async def create_review(self, project_id: uuid.UUID, data: ReviewCreate) -> ReviewDetailResponse: ...
     @abstractmethod
-    async def get_review(self, review_id: uuid.UUID) -> ReviewDetailResponse | None:
-        ...
-
+    async def get_review(self, review_id: uuid.UUID) -> ReviewDetailResponse | None: ...
     @abstractmethod
-    async def list_reviews(self, project_id: uuid.UUID) -> list[ReviewResponse]:
-        ...
-
-    # ── Findings ──
-
+    async def list_reviews(self, project_id: uuid.UUID) -> list[ReviewResponse]: ...
     @abstractmethod
-    async def update_finding_status(
-        self, finding_id: uuid.UUID, data: FindingStatusUpdate
-    ) -> FindingResponse | None:
-        ...
+    async def update_finding_status(self, finding_id: uuid.UUID, status: str) -> FindingResponse | None: ...

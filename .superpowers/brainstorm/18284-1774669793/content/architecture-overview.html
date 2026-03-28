@@ -1,0 +1,87 @@
+<h2>CodeGuard 系统架构总览</h2>
+<p class="subtitle">三大模块交互关系与数据流</p>
+
+<div class="mockup">
+  <div class="mockup-header">系统架构图</div>
+  <div class="mockup-body" style="padding: 24px; font-family: monospace; font-size: 13px; line-height: 1.6; background: #1a1a2e; color: #e0e0e0;">
+    <pre style="margin:0; white-space: pre; overflow-x: auto;">
+┌─────────────────────────────────────────────────────────────────────┐
+│                        Claude Code Session                         │
+│                                                                     │
+│  ┌──────────────┐    task done     ┌──────────────────────────┐    │
+│  │  Main Agent   │ ──── Hook ────▶ │     ReviewAgent          │    │
+│  │  (用户交互)    │                 │  (Sub Agent, 代码审查)     │    │
+│  └──────────────┘                  │                          │    │
+│                                     │  ┌────────────────────┐ │    │
+│                                     │  │ Skills (lazy load)  │ │    │
+│                                     │  │ • general-review    │ │    │
+│                                     │  │ • security-review   │ │    │
+│                                     │  │ • performance-review│ │    │
+│                                     │  └────────────────────┘ │    │
+│                                     └──────────┬───────────────┘    │
+│                                                 │                   │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                   Plugin (codeguard/)                        │   │
+│  │  .claude-plugin/plugin.json  │  hooks/hooks.json            │   │
+│  │  agents/review-agent.md      │  hooks/scripts/upload.sh     │   │
+│  │  skills/*/SKILL.md           │  settings.json               │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                            JSON Upload (HTTP POST)
+                            Authorization: Bearer API_KEY
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                     Server (FastAPI Container)                       │
+│                                                                     │
+│  ┌──────────┐  ┌──────────────┐  ┌────────────────────────────┐   │
+│  │ REST API  │  │ Storage Layer │  │  VCS Integration (future)  │   │
+│  │ /api/v1/  │  │ (Abstract)    │  │  • GitLab adapter          │   │
+│  │           │  │  ├ SQLite     │  │  • GitHub adapter           │   │
+│  │ • reviews │  │  └ PostgreSQL │  │  • Bitbucket adapter        │   │
+│  │ • projects│  │              │  └────────────────────────────┘   │
+│  │ • findings│  └──────────────┘                                   │
+│  └──────────┘                                                       │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                              REST API (JSON)
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      Web UI (Nginx Container)                       │
+│                                                                     │
+│  React + TypeScript + Vite                                          │
+│                                                                     │
+│  ┌─────────────┐  ┌──────────────┐  ┌──────────────────────┐      │
+│  │ Project List  │  │ Review Report │  │ Finding Detail       │      │
+│  │ /projects     │  │ /projects/    │  │ (evidence chain,     │      │
+│  │              │  │  {id}/reviews/ │  │  test results,       │      │
+│  │              │  │  {rid}         │  │  code browser)       │      │
+│  └─────────────┘  └──────────────┘  └──────────────────────┘      │
+└─────────────────────────────────────────────────────────────────────┘
+    </pre>
+  </div>
+</div>
+
+<div style="margin-top: 24px;">
+  <h3>关键设计决策</h3>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px;">
+    <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 16px;">
+      <div class="label">Plugin</div>
+      <p>标准 Claude Code 插件格式，Hook 驱动自动触发，Skills 按需加载</p>
+    </div>
+    <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 16px;">
+      <div class="label">Server</div>
+      <p>FastAPI 异步服务，存储层抽象（SQLite 默认 / PostgreSQL 可选），API Key 认证</p>
+    </div>
+    <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 16px;">
+      <div class="label">Web UI</div>
+      <p>React + TS + Vite，按项目组织 Review，支持 evidence chain 展示</p>
+    </div>
+    <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 16px;">
+      <div class="label">部署</div>
+      <p>Docker Compose 两容器（Server + Nginx），一键启动</p>
+    </div>
+  </div>
+</div>

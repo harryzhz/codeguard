@@ -17,7 +17,7 @@ async def update_finding_status(
     data: FindingStatusUpdate,
     repo: ReviewRepository = Depends(get_repository),
 ):
-    result = await repo.update_finding_status(finding_id, data)
+    result = await repo.update_finding_status(finding_id, data.status)
     if result is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Finding not found")
     return result

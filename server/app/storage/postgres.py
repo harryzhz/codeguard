@@ -9,7 +9,6 @@ from sqlalchemy.orm import selectinload
 
 from app.models import (
     FindingResponse,
-    FindingStatusUpdate,
     ProjectCreate,
     ProjectResponse,
     ReviewCreate,
@@ -31,7 +30,6 @@ class PostgresReviewRepository(ReviewRepository):
         async with self._sf() as session:
             row = ProjectRow(
                 name=data.name,
-                repo_url=data.repo_url,
                 api_key=secrets.token_urlsafe(32),
             )
             session.add(row)
@@ -41,7 +39,7 @@ class PostgresReviewRepository(ReviewRepository):
 
     async def get_project(self, project_id: uuid.UUID) -> ProjectResponse | None:
         async with self._sf() as session:
-            row = await session.get(ProjectRow, project_id)
+            row = await session.get(ProjectRow, str(project_id))
             return ProjectResponse.model_validate(row) if row else None
 
     async def get_project_by_api_key(self, api_key: str) -> ProjectResponse | None:
@@ -63,9 +61,10 @@ class PostgresReviewRepository(ReviewRepository):
     ) -> ReviewDetailResponse:
         async with self._sf() as session:
             review = ReviewRow(
-                project_id=project_id,
-                commit_sha=data.commit_sha,
-                branch=data.branch,
+                project_id=str(project_id),
+                version=data.version,
+                summary=data.summary,
+                files_changed=data.files_changed,
             )
             session.add(review)
             await session.flush()
@@ -73,13 +72,14 @@ class PostgresReviewRepository(ReviewRepository):
             for f in data.findings:
                 finding = FindingRow(
                     review_id=review.id,
-                    file=f.file,
-                    line=f.line,
-                    rule=f.rule,
-                    severity=f.severity.value,
-                    message=f.message,
-                    snippet=f.snippet,
-                    meta=f.meta,
+                    severity=f.severity,
+                    confidence=f.confidence,
+                    title=f.title,
+                    description=f.description,
+                    category=f.category,
+                    evidence_chain=f.evidence_chain,
+                    test_verification=f.test_verification,
+                    suggestion=f.suggestion,
                 )
                 session.add(finding)
 
@@ -95,8 +95,9 @@ class PostgresReviewRepository(ReviewRepository):
             return ReviewDetailResponse(
                 id=review.id,
                 project_id=review.project_id,
-                commit_sha=review.commit_sha,
-                branch=review.branch,
+                version=review.version,
+                summary=review.summary,
+                files_changed=review.files_changed,
                 findings=[FindingResponse.model_validate(f) for f in review.findings],
                 created_at=review.created_at,
             )
@@ -106,7 +107,7 @@ class PostgresReviewRepository(ReviewRepository):
             stmt = (
                 select(ReviewRow)
                 .options(selectinload(ReviewRow.findings))
-                .where(ReviewRow.id == review_id)
+                .where(ReviewRow.id == str(review_id))
             )
             review = (await session.execute(stmt)).scalar_one_or_none()
             if not review:
@@ -114,8 +115,9 @@ class PostgresReviewRepository(ReviewRepository):
             return ReviewDetailResponse(
                 id=review.id,
                 project_id=review.project_id,
-                commit_sha=review.commit_sha,
-                branch=review.branch,
+                version=review.version,
+                summary=review.summary,
+                files_changed=review.files_changed,
                 findings=[FindingResponse.model_validate(f) for f in review.findings],
                 created_at=review.created_at,
             )
@@ -124,8 +126,7 @@ class PostgresReviewRepository(ReviewRepository):
         async with self._sf() as session:
             stmt = (
                 select(ReviewRow)
-                .options(selectinload(ReviewRow.findings))
-                .where(ReviewRow.project_id == project_id)
+                .where(ReviewRow.project_id == str(project_id))
                 .order_by(ReviewRow.created_at)
             )
             rows = (await session.execute(stmt)).scalars().all()
@@ -133,9 +134,9 @@ class PostgresReviewRepository(ReviewRepository):
                 ReviewResponse(
                     id=r.id,
                     project_id=r.project_id,
-                    commit_sha=r.commit_sha,
-                    branch=r.branch,
-                    findings_count=len(r.findings),
+                    version=r.version,
+                    summary=r.summary,
+                    files_changed=r.files_changed,
                     created_at=r.created_at,
                 )
                 for r in rows
@@ -144,13 +145,13 @@ class PostgresReviewRepository(ReviewRepository):
     # ── Findings ──
 
     async def update_finding_status(
-        self, finding_id: uuid.UUID, data: FindingStatusUpdate
+        self, finding_id: uuid.UUID, status: str
     ) -> FindingResponse | None:
         async with self._sf() as session:
-            row = await session.get(FindingRow, finding_id)
+            row = await session.get(FindingRow, str(finding_id))
             if not row:
                 return None
-            row.status = data.status.value
+            row.status = status
             await session.commit()
             await session.refresh(row)
             return FindingResponse.model_validate(row)

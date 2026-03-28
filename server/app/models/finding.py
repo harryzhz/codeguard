@@ -1,52 +1,33 @@
 from __future__ import annotations
-
 import uuid
 from datetime import datetime
-from enum import Enum
-from typing import Any
-
+from typing import Any, Literal
 from pydantic import BaseModel, Field
 
-
-class Severity(str, Enum):
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    CRITICAL = "critical"
-
-
-class FindingStatus(str, Enum):
-    OPEN = "open"
-    ACKNOWLEDGED = "acknowledged"
-    FIXED = "fixed"
-    FALSE_POSITIVE = "false_positive"
-
-
 class FindingCreate(BaseModel):
-    file: str
-    line: int = Field(..., ge=1)
-    rule: str
-    severity: Severity
-    message: str
-    snippet: str = ""
-    meta: dict[str, Any] = Field(default_factory=dict)
-
+    severity: Literal["critical", "warning", "style"]
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    title: str = Field(..., min_length=1, max_length=500)
+    description: str
+    category: Literal["logic", "security", "performance", "style"]
+    evidence_chain: list[dict[str, Any]]
+    test_verification: dict[str, Any] | None = None
+    suggestion: str
 
 class FindingStatusUpdate(BaseModel):
-    status: FindingStatus
-
+    status: Literal["accepted", "dismissed"]
 
 class FindingResponse(BaseModel):
     id: uuid.UUID
     review_id: uuid.UUID
-    file: str
-    line: int
-    rule: str
-    severity: Severity
-    message: str
-    snippet: str
-    meta: dict[str, Any]
-    status: FindingStatus
+    severity: str
+    confidence: float
+    title: str
+    description: str
+    category: str
+    evidence_chain: list[dict[str, Any]]
+    test_verification: dict[str, Any] | None
+    suggestion: str
+    status: str
     created_at: datetime
-
     model_config = {"from_attributes": True}

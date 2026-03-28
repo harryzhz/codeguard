@@ -26,7 +26,7 @@ async def client(repo: PostgresReviewRepository):
 
 @pytest_asyncio.fixture()
 async def project_with_key(repo: PostgresReviewRepository):
-    p = await repo.create_project(ProjectCreate(name="review-proj", repo_url="https://x.com"))
+    p = await repo.create_project(ProjectCreate(name="review-proj"))
     return p
 
 
@@ -34,15 +34,18 @@ async def test_create_review_authenticated(client: AsyncClient, project_with_key
     resp = await client.post(
         "/api/v1/reviews/",
         json={
-            "commit_sha": "abc123",
-            "branch": "main",
+            "version": "1.0",
+            "summary": {"total": 1},
+            "files_changed": ["a.py"],
             "findings": [
                 {
-                    "file": "a.py",
-                    "line": 1,
-                    "rule": "no-eval",
-                    "severity": "high",
-                    "message": "bad",
+                    "severity": "critical",
+                    "confidence": 0.9,
+                    "title": "Eval usage",
+                    "description": "bad",
+                    "category": "security",
+                    "evidence_chain": [{"step": "found"}],
+                    "suggestion": "remove eval",
                 }
             ],
         },
@@ -50,14 +53,14 @@ async def test_create_review_authenticated(client: AsyncClient, project_with_key
     )
     assert resp.status_code == 201
     data = resp.json()
-    assert data["commit_sha"] == "abc123"
+    assert data["version"] == "1.0"
     assert len(data["findings"]) == 1
 
 
 async def test_create_review_unauthenticated(client: AsyncClient):
     resp = await client.post(
         "/api/v1/reviews/",
-        json={"commit_sha": "abc123"},
+        json={"version": "1.0"},
         headers={"Authorization": "Bearer bad-key"},
     )
     assert resp.status_code == 401
@@ -67,7 +70,7 @@ async def test_list_reviews(client: AsyncClient, project_with_key):
     headers = {"Authorization": f"Bearer {project_with_key.api_key}"}
     await client.post(
         "/api/v1/reviews/",
-        json={"commit_sha": "a"},
+        json={"version": "1.0"},
         headers=headers,
     )
     resp = await client.get(
@@ -82,7 +85,7 @@ async def test_get_review(client: AsyncClient, project_with_key):
     headers = {"Authorization": f"Bearer {project_with_key.api_key}"}
     create_resp = await client.post(
         "/api/v1/reviews/",
-        json={"commit_sha": "b"},
+        json={"version": "1.0"},
         headers=headers,
     )
     rid = create_resp.json()["id"]

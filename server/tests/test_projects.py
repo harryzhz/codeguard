@@ -26,7 +26,7 @@ async def client(repo: PostgresReviewRepository):
 async def test_create_project(client: AsyncClient):
     resp = await client.post(
         "/api/v1/projects/",
-        json={"name": "proj-a", "repo_url": "https://example.com/a"},
+        json={"name": "proj-a"},
     )
     assert resp.status_code == 201
     data = resp.json()
@@ -35,7 +35,7 @@ async def test_create_project(client: AsyncClient):
 
 
 async def test_create_project_duplicate(client: AsyncClient):
-    payload = {"name": "dup", "repo_url": "https://example.com/dup"}
+    payload = {"name": "dup"}
     await client.post("/api/v1/projects/", json=payload)
     resp = await client.post("/api/v1/projects/", json=payload)
     assert resp.status_code == 409
@@ -44,7 +44,7 @@ async def test_create_project_duplicate(client: AsyncClient):
 async def test_list_projects(client: AsyncClient):
     await client.post(
         "/api/v1/projects/",
-        json={"name": "p1", "repo_url": "u"},
+        json={"name": "p1"},
     )
     resp = await client.get("/api/v1/projects/")
     assert resp.status_code == 200
@@ -54,7 +54,7 @@ async def test_list_projects(client: AsyncClient):
 async def test_get_project(client: AsyncClient):
     create_resp = await client.post(
         "/api/v1/projects/",
-        json={"name": "p2", "repo_url": "u"},
+        json={"name": "p2"},
     )
     pid = create_resp.json()["id"]
     resp = await client.get(f"/api/v1/projects/{pid}")

@@ -14,19 +14,18 @@ from app.models import (
     ReviewDetailResponse,
     ReviewResponse,
 )
-from app.models.finding import FindingStatus, Severity
 
 
 # ── ProjectCreate ──
 
 def test_project_create_valid():
-    p = ProjectCreate(name="my-project", repo_url="https://gitlab.com/repo")
+    p = ProjectCreate(name="my-project")
     assert p.name == "my-project"
 
 
 def test_project_create_empty_name():
     with pytest.raises(ValidationError):
-        ProjectCreate(name="", repo_url="https://gitlab.com/repo")
+        ProjectCreate(name="")
 
 
 # ── ProjectResponse ──
@@ -36,7 +35,6 @@ def test_project_response():
     pr = ProjectResponse(
         id=uuid.uuid4(),
         name="p",
-        repo_url="https://x.com",
         api_key="key-123",
         created_at=now,
     )
@@ -47,28 +45,36 @@ def test_project_response():
 
 def test_finding_create_valid():
     f = FindingCreate(
-        file="main.py",
-        line=10,
-        rule="no-eval",
-        severity=Severity.HIGH,
-        message="Avoid eval",
+        severity="critical",
+        confidence=0.95,
+        title="Eval usage detected",
+        description="Avoid eval",
+        category="security",
+        evidence_chain=[{"step": "found eval call"}],
+        suggestion="Use ast.literal_eval instead",
     )
-    assert f.snippet == ""
-    assert f.meta == {}
+    assert f.test_verification is None
+    assert f.confidence == 0.95
 
 
-def test_finding_create_invalid_line():
+def test_finding_create_invalid_confidence():
     with pytest.raises(ValidationError):
         FindingCreate(
-            file="a.py", line=0, rule="r", severity="high", message="m"
+            severity="critical",
+            confidence=1.5,
+            title="t",
+            description="d",
+            category="logic",
+            evidence_chain=[],
+            suggestion="s",
         )
 
 
 # ── FindingStatusUpdate ──
 
 def test_finding_status_update():
-    u = FindingStatusUpdate(status=FindingStatus.FIXED)
-    assert u.status == FindingStatus.FIXED
+    u = FindingStatusUpdate(status="accepted")
+    assert u.status == "accepted"
 
 
 def test_finding_status_update_invalid():
@@ -83,37 +89,48 @@ def test_finding_response():
     fr = FindingResponse(
         id=uuid.uuid4(),
         review_id=uuid.uuid4(),
-        file="a.py",
-        line=1,
-        rule="r",
-        severity=Severity.LOW,
-        message="m",
-        snippet="",
-        meta={},
-        status=FindingStatus.OPEN,
+        severity="critical",
+        confidence=0.9,
+        title="Test finding",
+        description="desc",
+        category="logic",
+        evidence_chain=[],
+        test_verification=None,
+        suggestion="fix it",
+        status="open",
         created_at=now,
     )
-    assert fr.status == FindingStatus.OPEN
+    assert fr.status == "open"
 
 
 # ── ReviewCreate ──
 
 def test_review_create_valid():
     r = ReviewCreate(
-        commit_sha="abc123",
-        branch="main",
+        version="1.0",
+        summary={"total": 1},
+        files_changed=["x.py"],
         findings=[
             FindingCreate(
-                file="x.py", line=1, rule="r", severity="low", message="m"
+                severity="warning",
+                confidence=0.8,
+                title="Issue",
+                description="desc",
+                category="style",
+                evidence_chain=[{"step": "found"}],
+                suggestion="fix",
             )
         ],
     )
     assert len(r.findings) == 1
 
 
-def test_review_create_empty_sha():
-    with pytest.raises(ValidationError):
-        ReviewCreate(commit_sha="")
+def test_review_create_defaults():
+    r = ReviewCreate()
+    assert r.version == "1.0"
+    assert r.summary == {}
+    assert r.files_changed == []
+    assert r.findings == []
 
 
 # ── ReviewResponse ──
@@ -123,12 +140,12 @@ def test_review_response():
     rr = ReviewResponse(
         id=uuid.uuid4(),
         project_id=uuid.uuid4(),
-        commit_sha="abc",
-        branch="main",
-        findings_count=3,
+        version="1.0",
+        summary={},
+        files_changed=[],
         created_at=now,
     )
-    assert rr.findings_count == 3
+    assert rr.version == "1.0"
 
 
 # ── ReviewDetailResponse ──
@@ -138,8 +155,9 @@ def test_review_detail_response():
     rd = ReviewDetailResponse(
         id=uuid.uuid4(),
         project_id=uuid.uuid4(),
-        commit_sha="abc",
-        branch="main",
+        version="1.0",
+        summary={},
+        files_changed=[],
         findings=[],
         created_at=now,
     )

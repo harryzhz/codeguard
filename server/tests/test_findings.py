@@ -26,18 +26,20 @@ async def client(repo: PostgresReviewRepository):
 
 @pytest_asyncio.fixture()
 async def finding_id(client: AsyncClient, repo: PostgresReviewRepository):
-    p = await repo.create_project(ProjectCreate(name="fp", repo_url="u"))
+    p = await repo.create_project(ProjectCreate(name="fp"))
     resp = await client.post(
         "/api/v1/reviews/",
         json={
-            "commit_sha": "sha1",
+            "version": "1.0",
             "findings": [
                 {
-                    "file": "x.py",
-                    "line": 5,
-                    "rule": "r1",
-                    "severity": "medium",
-                    "message": "msg",
+                    "severity": "warning",
+                    "confidence": 0.8,
+                    "title": "Issue found",
+                    "description": "msg",
+                    "category": "logic",
+                    "evidence_chain": [{"step": "detected"}],
+                    "suggestion": "fix it",
                 }
             ],
         },
@@ -49,16 +51,16 @@ async def finding_id(client: AsyncClient, repo: PostgresReviewRepository):
 async def test_update_finding_status(client: AsyncClient, finding_id: str):
     resp = await client.patch(
         f"/api/v1/findings/{finding_id}",
-        json={"status": "fixed"},
+        json={"status": "accepted"},
     )
     assert resp.status_code == 200
-    assert resp.json()["status"] == "fixed"
+    assert resp.json()["status"] == "accepted"
 
 
 async def test_update_finding_not_found(client: AsyncClient):
     resp = await client.patch(
         f"/api/v1/findings/{uuid.uuid4()}",
-        json={"status": "acknowledged"},
+        json={"status": "dismissed"},
     )
     assert resp.status_code == 404
 
