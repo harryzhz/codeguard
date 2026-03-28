@@ -38,7 +38,7 @@ export function SummaryBar({ summary, children }: SummaryBarProps) {
     >
       <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
         <span data-testid="total-count" style={{ fontSize: "14px", fontWeight: 600 }}>
-          {summary.total} findings
+          {summary.total_findings} findings
         </span>
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <Dot color="#D1453B" />

@@ -50,28 +50,20 @@ export function ReviewList() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
                   <h2 style={{ fontSize: "15px", fontWeight: 600, color: "#1A1A1A" }}>
-                    {review.branch}
+                    {review.version}
                   </h2>
-                  <p style={{ fontSize: "12px", color: "#7A7570", marginTop: "4px", fontFamily: "monospace" }}>
-                    {review.commit_sha.slice(0, 8)}
+                  <p style={{ fontSize: "12px", color: "#7A7570", marginTop: "4px" }}>
+                    {review.files_changed.length} files changed
                   </p>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                   <span style={{ fontSize: "13px", color: "#7A7570" }}>
-                    {review.summary.total} findings
+                    {review.summary.total_findings} findings
                   </span>
                   {review.summary.critical > 0 && <SeverityBadge severity="critical" />}
                   {review.summary.warning > 0 && <SeverityBadge severity="warning" />}
-                  <span
-                    style={{
-                      fontSize: "12px",
-                      padding: "2px 8px",
-                      borderRadius: "6px",
-                      backgroundColor: review.status === "completed" ? "#EBF5F3" : "#FFF5DC",
-                      color: review.status === "completed" ? "#2D7A6F" : "#C68B00",
-                    }}
-                  >
-                    {review.status}
+                  <span style={{ fontSize: "12px", color: "#7A7570" }}>
+                    Tests: {review.summary.tests_passed}/{review.summary.tests_run}
                   </span>
                 </div>
               </div>

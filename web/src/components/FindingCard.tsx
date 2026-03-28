@@ -53,7 +53,7 @@ export function FindingCard({ finding, onAccept, onDismiss }: FindingCardProps) 
             {finding.confidence}% confidence
           </span>
           <span style={{ fontSize: "12px", color: "#7A7570" }}>
-            {expanded ? "▲" : "▼"}
+            {expanded ? "\u25B2" : "\u25BC"}
           </span>
         </div>
       </div>
@@ -64,12 +64,12 @@ export function FindingCard({ finding, onAccept, onDismiss }: FindingCardProps) 
             {finding.description}
           </p>
 
-          {finding.evidence.length > 0 && (
+          {finding.evidence_chain.length > 0 && (
             <div style={{ marginBottom: "16px" }}>
               <h4 style={{ fontSize: "12px", color: "#7A7570", marginBottom: "8px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
                 Evidence Chain
               </h4>
-              <EvidenceChain steps={finding.evidence} />
+              <EvidenceChain steps={finding.evidence_chain} />
             </div>
           )}
 
@@ -81,12 +81,13 @@ export function FindingCard({ finding, onAccept, onDismiss }: FindingCardProps) 
               <div style={{
                 padding: "10px 14px",
                 borderRadius: "8px",
-                backgroundColor: finding.test_verification.status === "pass" ? "#EBF5F3" : finding.test_verification.status === "fail" ? "#FDECEB" : "#F0EEEB",
+                backgroundColor: finding.test_verification.status === "passed" ? "#EBF5F3" : finding.test_verification.status === "failed" ? "#FDECEB" : "#F0EEEB",
                 fontSize: "13px",
               }}>
-                <strong>{finding.test_verification.status.toUpperCase()}</strong>: {finding.test_verification.description}
-                {finding.test_verification.details && (
-                  <p style={{ marginTop: "4px", fontSize: "12px", color: "#7A7570" }}>{finding.test_verification.details}</p>
+                <strong>{finding.test_verification.status.toUpperCase()}</strong>
+                {finding.test_verification.test_name && <>: {finding.test_verification.test_name}</>}
+                {finding.test_verification.output && (
+                  <p style={{ marginTop: "4px", fontSize: "12px", color: "#7A7570" }}>{finding.test_verification.output}</p>
                 )}
               </div>
             </div>

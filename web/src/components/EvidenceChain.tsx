@@ -32,7 +32,7 @@ export function EvidenceChain({ steps }: EvidenceChainProps) {
             </div>
             <div style={{ flex: 1 }}>
               <p style={{ margin: 0, fontSize: "14px", color: "#1A1A1A" }}>
-                {step.description}
+                {step.observation}
               </p>
               {step.file && (
                 <span
@@ -47,7 +47,7 @@ export function EvidenceChain({ steps }: EvidenceChainProps) {
                   {step.line != null && `:${step.line}`}
                 </span>
               )}
-              {step.code && (
+              {step.snippet && (
                 <pre
                   data-testid="code-block"
                   style={{
@@ -61,7 +61,7 @@ export function EvidenceChain({ steps }: EvidenceChainProps) {
                     whiteSpace: "pre-wrap",
                   }}
                 >
-                  {step.code}
+                  {step.snippet}
                 </pre>
               )}
             </div>

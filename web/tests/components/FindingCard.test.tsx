@@ -6,21 +6,22 @@ import type { Finding } from "../../src/api/client";
 
 const baseFinding: Finding = {
   id: "f1",
+  review_id: "r1",
   title: "SQL Injection",
   description: "Unsanitized input in query",
   severity: "critical",
   status: "open",
   confidence: 92,
-  file: "src/db.ts",
-  line: 55,
+  category: "security",
   suggestion: "Use parameterized queries",
-  evidence: [
-    { step: 1, description: "User input flows to query", file: "src/db.ts", line: 55 },
+  evidence_chain: [
+    { step: 1, observation: "User input flows to query", file: "src/db.ts", line: 55 },
   ],
   test_verification: {
-    description: "Verified with malicious input",
-    status: "pass",
+    test_name: "Verified with malicious input",
+    status: "passed",
   },
+  created_at: new Date().toISOString(),
 };
 
 describe("FindingCard", () => {

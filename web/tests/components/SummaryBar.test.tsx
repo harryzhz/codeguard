@@ -2,7 +2,16 @@ import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { SummaryBar } from "../../src/components/SummaryBar";
 
-const summary = { total: 10, critical: 2, warning: 5, style: 3 };
+const summary = {
+  files_reviewed: 5,
+  total_findings: 10,
+  critical: 2,
+  warning: 5,
+  style: 3,
+  tests_run: 8,
+  tests_passed: 7,
+  tests_failed: 1,
+};
 
 describe("SummaryBar", () => {
   it("renders total findings count", () => {

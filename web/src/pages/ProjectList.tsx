@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import type { Project } from "../api/client";
 import { fetchProjects } from "../api/client";
 import { NavBar } from "../components/NavBar";
-import { SeverityBadge } from "../components/SeverityBadge";
 
 function relativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -56,25 +55,10 @@ export function ProjectList() {
                   <h2 style={{ fontSize: "16px", fontWeight: 600, color: "#1A1A1A" }}>
                     {project.name}
                   </h2>
-                  <p style={{ fontSize: "13px", color: "#7A7570", marginTop: "4px" }}>
-                    {project.repo_url}
-                  </p>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  {project.latest_review?.summary && (
-                    <>
-                      {project.latest_review.summary.critical > 0 && (
-                        <SeverityBadge severity="critical" />
-                      )}
-                      {project.latest_review.summary.warning > 0 && (
-                        <SeverityBadge severity="warning" />
-                      )}
-                    </>
-                  )}
-                  <span style={{ fontSize: "12px", color: "#7A7570" }}>
-                    {project.created_at && relativeTime(project.created_at)}
-                  </span>
-                </div>
+                <span style={{ fontSize: "12px", color: "#7A7570" }}>
+                  {project.created_at && relativeTime(project.created_at)}
+                </span>
               </div>
             </Link>
           ))}

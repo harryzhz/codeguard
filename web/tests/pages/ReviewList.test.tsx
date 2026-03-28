@@ -36,17 +36,24 @@ describe("ReviewList", () => {
       {
         id: "r1",
         project_id: "p1",
-        commit_sha: "abc12345def",
-        branch: "main",
-        status: "completed",
-        summary: { total: 3, critical: 1, warning: 1, style: 1 },
-        findings: [],
+        version: "v1.0.0",
+        summary: {
+          files_reviewed: 5,
+          total_findings: 3,
+          critical: 1,
+          warning: 1,
+          style: 1,
+          tests_run: 10,
+          tests_passed: 9,
+          tests_failed: 1,
+        },
+        files_changed: ["a.ts", "b.ts"],
         created_at: new Date().toISOString(),
       },
     ]);
     renderWithRouter();
     await waitFor(() => {
-      expect(screen.getByText("main")).toBeInTheDocument();
+      expect(screen.getByText("v1.0.0")).toBeInTheDocument();
     });
     expect(screen.getByTestId("review-card")).toBeInTheDocument();
     expect(screen.getByText("3 findings")).toBeInTheDocument();

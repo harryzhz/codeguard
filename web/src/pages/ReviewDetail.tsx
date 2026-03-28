@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useParams } from "react-router-dom";
-import type { Review, Finding } from "../api/client";
+import type { ReviewDetail as ReviewDetailType, Finding } from "../api/client";
 import { fetchReview, updateFindingStatus } from "../api/client";
 import { NavBar } from "../components/NavBar";
 import { SummaryBar } from "../components/SummaryBar";
@@ -9,18 +9,18 @@ import { FindingCard } from "../components/FindingCard";
 
 export function ReviewDetail() {
   const { projectId, reviewId } = useParams<{ projectId: string; reviewId: string }>();
-  const [review, setReview] = useState<Review | null>(null);
+  const [review, setReview] = useState<ReviewDetailType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterValue>("all");
 
   useEffect(() => {
-    if (!projectId || !reviewId) return;
-    fetchReview(projectId, reviewId)
+    if (!reviewId) return;
+    fetchReview(reviewId)
       .then(setReview)
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [projectId, reviewId]);
+  }, [reviewId]);
 
   const filteredFindings = useMemo(() => {
     if (!review) return [];
@@ -30,9 +30,9 @@ export function ReviewDetail() {
 
   const handleStatusUpdate = useCallback(
     async (findingId: string, status: "accepted" | "dismissed") => {
-      if (!projectId || !reviewId || !review) return;
+      if (!review) return;
       try {
-        const updated = await updateFindingStatus(projectId, reviewId, findingId, status);
+        const updated = await updateFindingStatus(findingId, status);
         setReview({
           ...review,
           findings: review.findings.map((f: Finding) => (f.id === findingId ? { ...f, status: updated.status } : f)),
@@ -41,7 +41,7 @@ export function ReviewDetail() {
         // silently fail for now
       }
     },
-    [projectId, reviewId, review],
+    [review],
   );
 
   return (

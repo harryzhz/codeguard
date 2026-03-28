@@ -16,32 +16,46 @@ const mockUpdateFindingStatus = vi.mocked(updateFindingStatus);
 const mockReview = {
   id: "r1",
   project_id: "p1",
-  commit_sha: "abc12345",
-  branch: "main",
-  status: "completed",
-  summary: { total: 2, critical: 1, warning: 1, style: 0 },
+  version: "v1.0.0",
+  summary: {
+    files_reviewed: 3,
+    total_findings: 2,
+    critical: 1,
+    warning: 1,
+    style: 0,
+    tests_run: 5,
+    tests_passed: 4,
+    tests_failed: 1,
+  },
+  files_changed: ["db.ts", "util.ts"],
   findings: [
     {
       id: "f1",
+      review_id: "r1",
       title: "SQL Injection",
       description: "Bad query",
       severity: "critical" as const,
       status: "open" as const,
       confidence: 90,
-      file: "db.ts",
-      line: 10,
-      evidence: [],
+      category: "security" as const,
+      evidence_chain: [],
+      test_verification: null,
+      suggestion: "",
+      created_at: new Date().toISOString(),
     },
     {
       id: "f2",
+      review_id: "r1",
       title: "Missing null check",
       description: "Could be null",
       severity: "warning" as const,
       status: "open" as const,
       confidence: 75,
-      file: "util.ts",
-      line: 20,
-      evidence: [],
+      category: "logic" as const,
+      evidence_chain: [],
+      test_verification: null,
+      suggestion: "",
+      created_at: new Date().toISOString(),
     },
   ],
   created_at: new Date().toISOString(),
@@ -111,7 +125,7 @@ describe("ReviewDetail", () => {
     // Expand first card
     await user.click(screen.getAllByTestId("finding-header")[0]);
     await user.click(screen.getByTestId("accept-btn"));
-    expect(mockUpdateFindingStatus).toHaveBeenCalledWith("p1", "r1", "f1", "accepted");
+    expect(mockUpdateFindingStatus).toHaveBeenCalledWith("f1", "accepted");
   });
 
   it("shows error on fetch failure", async () => {

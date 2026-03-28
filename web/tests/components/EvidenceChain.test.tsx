@@ -4,9 +4,9 @@ import { EvidenceChain } from "../../src/components/EvidenceChain";
 import type { EvidenceStep } from "../../src/api/client";
 
 const steps: EvidenceStep[] = [
-  { step: 1, description: "Found vulnerable call", file: "src/auth.ts", line: 42, code: "eval(input)" },
-  { step: 2, description: "Input is unsanitized", file: "src/handler.ts", line: 10 },
-  { step: 3, description: "User data flows to eval" },
+  { step: 1, observation: "Found vulnerable call", file: "src/auth.ts", line: 42, snippet: "eval(input)" },
+  { step: 2, observation: "Input is unsanitized", file: "src/handler.ts", line: 10 },
+  { step: 3, observation: "User data flows to eval" },
 ];
 
 describe("EvidenceChain", () => {

@@ -34,7 +34,7 @@ describe("ProjectList", () => {
       {
         id: "p1",
         name: "My Project",
-        repo_url: "https://github.com/test/repo",
+        api_key: "key-123",
         created_at: new Date().toISOString(),
       },
     ]);

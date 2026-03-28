@@ -1,57 +1,64 @@
 export type Severity = "critical" | "warning" | "style";
 export type FindingStatus = "open" | "accepted" | "dismissed";
+export type FindingCategory = "logic" | "security" | "performance" | "style";
 
 export interface EvidenceStep {
   step: number;
-  description: string;
   file?: string;
   line?: number;
-  code?: string;
+  snippet?: string;
+  observation: string;
 }
 
 export interface TestVerification {
-  description: string;
-  status: "pass" | "fail" | "skipped";
-  details?: string;
+  status: "passed" | "failed" | "no_coverage";
+  test_name?: string;
+  output?: string;
 }
 
 export interface Finding {
   id: string;
+  review_id: string;
+  severity: Severity;
+  confidence: number;
   title: string;
   description: string;
-  severity: Severity;
+  category: FindingCategory;
+  evidence_chain: EvidenceStep[];
+  test_verification: TestVerification | null;
+  suggestion: string;
   status: FindingStatus;
-  confidence: number;
-  file: string;
-  line: number;
-  suggestion?: string;
-  evidence: EvidenceStep[];
-  test_verification?: TestVerification;
+  created_at: string;
 }
 
 export interface ReviewSummary {
-  total: number;
+  files_reviewed: number;
+  total_findings: number;
   critical: number;
   warning: number;
   style: number;
+  tests_run: number;
+  tests_passed: number;
+  tests_failed: number;
 }
 
 export interface Review {
   id: string;
   project_id: string;
-  commit_sha: string;
-  branch: string;
-  status: string;
+  version: string;
   summary: ReviewSummary;
-  findings: Finding[];
+  files_changed: string[];
   created_at: string;
+}
+
+export interface ReviewDetail extends Review {
+  findings: Finding[];
 }
 
 export interface Project {
   id: string;
   name: string;
-  repo_url: string;
-  latest_review?: Review;
+  api_key: string;
   created_at: string;
 }
 
@@ -66,7 +73,7 @@ class ApiError extends Error {
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`/api${path}`, {
+  const response = await fetch(`/api/v1${path}`, {
     headers: { "Content-Type": "application/json" },
     ...options,
   });
@@ -77,25 +84,23 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export function fetchProjects(): Promise<Project[]> {
-  return request<Project[]>("/projects");
+  return request<Project[]>("/projects/");
 }
 
 export function fetchReviews(projectId: string): Promise<Review[]> {
-  return request<Review[]>(`/projects/${projectId}/reviews`);
+  return request<Review[]>(`/reviews/?project_id=${projectId}`);
 }
 
-export function fetchReview(projectId: string, reviewId: string): Promise<Review> {
-  return request<Review>(`/projects/${projectId}/reviews/${reviewId}`);
+export function fetchReview(reviewId: string): Promise<ReviewDetail> {
+  return request<ReviewDetail>(`/reviews/${reviewId}`);
 }
 
 export function updateFindingStatus(
-  projectId: string,
-  reviewId: string,
   findingId: string,
   status: FindingStatus,
 ): Promise<Finding> {
   return request<Finding>(
-    `/projects/${projectId}/reviews/${reviewId}/findings/${findingId}`,
+    `/findings/${findingId}`,
     {
       method: "PATCH",
       body: JSON.stringify({ status }),
