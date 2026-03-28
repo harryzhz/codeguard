@@ -1,3 +1,9 @@
+---
+name: security-review
+description: Security review - SQL injection, auth bypass, secret exposure, input validation, SSRF
+disable-model-invocation: true
+---
+
 # CodeGuard Security Review Skill
 
 This skill defines the security-focused checks for the ReviewAgent. Security findings often require tracing data flow from an untrusted source to a sensitive sink. Apply these checks to every file in the review scope.

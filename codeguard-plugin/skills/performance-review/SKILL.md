@@ -1,3 +1,9 @@
+---
+name: performance-review
+description: Performance review - N+1 queries, unbounded loops, missing pagination, memory, async blocking
+disable-model-invocation: true
+---
+
 # CodeGuard Performance Review Skill
 
 This skill defines the performance-focused checks for the ReviewAgent. Performance issues can cause degraded user experience, increased costs, and system instability. Apply these checks to every file in the review scope.

@@ -1,3 +1,9 @@
+---
+name: general-review
+description: General code quality review - logic errors, edge cases, error handling, resource cleanup, naming
+disable-model-invocation: true
+---
+
 # CodeGuard General Review Skill
 
 This skill defines the checks and guidelines for general code quality review. Apply these checks to every file in the review scope.

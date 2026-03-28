@@ -1,3 +1,9 @@
+---
+name: output-format
+description: Defines the JSON output schema for ReviewAgent structured reports
+disable-model-invocation: true
+---
+
 # CodeGuard Output Format Skill
 
 This skill defines the exact JSON schema that the ReviewAgent must produce as its final output. Every review — regardless of scope or findings — must conform to this schema.
