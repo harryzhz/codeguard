@@ -1,0 +1,22 @@
+{
+  "agents": {
+    "review-agent": {
+      "enabled": true,
+      "model": "default",
+      "skills": [
+        "general-review",
+        "security-review",
+        "performance-review",
+        "output-format"
+      ]
+    }
+  },
+  "hooks": {
+    "auto_review_on_stop": true
+  },
+  "review": {
+    "max_files": 50,
+    "run_tests": true,
+    "severity_threshold": "style"
+  }
+}
