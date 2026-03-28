@@ -6,25 +6,25 @@ import { NavBar } from "../components/NavBar";
 import { SeverityBadge } from "../components/SeverityBadge";
 
 export function ReviewList() {
-  const { projectId } = useParams<{ projectId: string }>();
+  const { projectName } = useParams<{ projectName: string }>();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!projectId) return;
-    fetchReviews(projectId)
+    if (!projectName) return;
+    fetchReviews(projectName)
       .then(setReviews)
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [projectId]);
+  }, [projectName]);
 
   return (
     <div>
       <NavBar
         breadcrumbs={[
           { label: "Projects", to: "/projects" },
-          { label: projectId ?? "" },
+          { label: projectName ?? "" },
         ]}
       />
       <div style={{ padding: "24px", maxWidth: "960px", margin: "0 auto" }}>
@@ -35,7 +35,7 @@ export function ReviewList() {
           {reviews.map((review) => (
             <Link
               key={review.id}
-              to={`/projects/${projectId}/reviews/${review.id}`}
+              to={`/projects/${projectName}/reviews/${review.id}`}
               data-testid="review-card"
               style={{
                 display: "block",

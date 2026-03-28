@@ -8,19 +8,19 @@ import { SeverityFilter, type FilterValue } from "../components/SeverityFilter";
 import { FindingCard } from "../components/FindingCard";
 
 export function ReviewDetail() {
-  const { projectId, reviewId } = useParams<{ projectId: string; reviewId: string }>();
+  const { projectName, reviewId } = useParams<{ projectName: string; reviewId: string }>();
   const [review, setReview] = useState<ReviewDetailType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterValue>("all");
 
   useEffect(() => {
-    if (!reviewId) return;
-    fetchReview(reviewId)
+    if (!projectName || !reviewId) return;
+    fetchReview(projectName, reviewId)
       .then(setReview)
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [reviewId]);
+  }, [projectName, reviewId]);
 
   const filteredFindings = useMemo(() => {
     if (!review) return [];
@@ -49,7 +49,7 @@ export function ReviewDetail() {
       <NavBar
         breadcrumbs={[
           { label: "Projects", to: "/projects" },
-          { label: projectId ?? "", to: `/projects/${projectId}/reviews` },
+          { label: projectName ?? "", to: `/projects/${projectName}/reviews` },
           { label: reviewId ?? "" },
         ]}
       />

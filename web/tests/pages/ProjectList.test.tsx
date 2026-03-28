@@ -34,7 +34,6 @@ describe("ProjectList", () => {
       {
         id: "p1",
         name: "My Project",
-        api_key: "key-123",
         created_at: new Date().toISOString(),
       },
     ]);

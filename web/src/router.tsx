@@ -13,11 +13,11 @@ export const router = createBrowserRouter([
     element: <ProjectList />,
   },
   {
-    path: "/projects/:projectId/reviews",
+    path: "/projects/:projectName/reviews",
     element: <ReviewList />,
   },
   {
-    path: "/projects/:projectId/reviews/:reviewId",
+    path: "/projects/:projectName/reviews/:reviewId",
     element: <ReviewDetail />,
   },
 ]);

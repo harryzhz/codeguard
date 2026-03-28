@@ -14,11 +14,11 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-function renderWithRouter(projectId = "p1") {
+function renderWithRouter(projectName = "my-project") {
   return render(
-    <MemoryRouter initialEntries={[`/projects/${projectId}/reviews`]}>
+    <MemoryRouter initialEntries={[`/projects/${projectName}/reviews`]}>
       <Routes>
-        <Route path="/projects/:projectId/reviews" element={<ReviewList />} />
+        <Route path="/projects/:projectName/reviews" element={<ReviewList />} />
       </Routes>
     </MemoryRouter>,
   );

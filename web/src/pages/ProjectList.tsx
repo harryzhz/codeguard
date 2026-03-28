@@ -38,7 +38,7 @@ export function ProjectList() {
           {projects.map((project) => (
             <Link
               key={project.id}
-              to={`/projects/${project.id}/reviews`}
+              to={`/projects/${project.name}/reviews`}
               data-testid="project-card"
               style={{
                 display: "block",

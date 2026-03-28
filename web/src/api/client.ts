@@ -58,7 +58,6 @@ export interface ReviewDetail extends Review {
 export interface Project {
   id: string;
   name: string;
-  api_key: string;
   created_at: string;
 }
 
@@ -84,15 +83,15 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export function fetchProjects(): Promise<Project[]> {
-  return request<Project[]>("/projects/");
+  return request<Project[]>("/projects");
 }
 
-export function fetchReviews(projectId: string): Promise<Review[]> {
-  return request<Review[]>(`/reviews/?project_id=${projectId}`);
+export function fetchReviews(projectName: string): Promise<Review[]> {
+  return request<Review[]>(`/projects/${projectName}/reviews`);
 }
 
-export function fetchReview(reviewId: string): Promise<ReviewDetail> {
-  return request<ReviewDetail>(`/reviews/${reviewId}`);
+export function fetchReview(projectName: string, reviewId: string): Promise<ReviewDetail> {
+  return request<ReviewDetail>(`/projects/${projectName}/reviews/${reviewId}`);
 }
 
 export function updateFindingStatus(

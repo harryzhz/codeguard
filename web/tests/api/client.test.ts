@@ -23,13 +23,13 @@ beforeEach(() => {
 });
 
 describe("fetchProjects", () => {
-  it("calls GET /api/v1/projects/ and returns data", async () => {
+  it("calls GET /api/v1/projects and returns data", async () => {
     const projects = [{ id: "1", name: "test" }];
     mockFetch.mockResolvedValue(jsonResponse(projects));
 
     const result = await fetchProjects();
 
-    expect(mockFetch).toHaveBeenCalledWith("/api/v1/projects/", {
+    expect(mockFetch).toHaveBeenCalledWith("/api/v1/projects", {
       headers: { "Content-Type": "application/json" },
     });
     expect(result).toEqual(projects);
@@ -37,13 +37,13 @@ describe("fetchProjects", () => {
 });
 
 describe("fetchReviews", () => {
-  it("calls GET /api/v1/reviews/?project_id=:id", async () => {
+  it("calls GET /api/v1/projects/:name/reviews", async () => {
     const reviews = [{ id: "r1" }];
     mockFetch.mockResolvedValue(jsonResponse(reviews));
 
-    const result = await fetchReviews("p1");
+    const result = await fetchReviews("my-project");
 
-    expect(mockFetch).toHaveBeenCalledWith("/api/v1/reviews/?project_id=p1", {
+    expect(mockFetch).toHaveBeenCalledWith("/api/v1/projects/my-project/reviews", {
       headers: { "Content-Type": "application/json" },
     });
     expect(result).toEqual(reviews);
@@ -51,13 +51,13 @@ describe("fetchReviews", () => {
 });
 
 describe("fetchReview", () => {
-  it("calls GET /api/v1/reviews/:rid", async () => {
+  it("calls GET /api/v1/projects/:name/reviews/:rid", async () => {
     const review = { id: "r1", findings: [] };
     mockFetch.mockResolvedValue(jsonResponse(review));
 
-    const result = await fetchReview("r1");
+    const result = await fetchReview("my-project", "r1");
 
-    expect(mockFetch).toHaveBeenCalledWith("/api/v1/reviews/r1", {
+    expect(mockFetch).toHaveBeenCalledWith("/api/v1/projects/my-project/reviews/r1", {
       headers: { "Content-Type": "application/json" },
     });
     expect(result).toEqual(review);

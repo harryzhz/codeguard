@@ -67,9 +67,9 @@ beforeEach(() => {
 
 function renderWithRouter() {
   return render(
-    <MemoryRouter initialEntries={["/projects/p1/reviews/r1"]}>
+    <MemoryRouter initialEntries={["/projects/my-project/reviews/r1"]}>
       <Routes>
-        <Route path="/projects/:projectId/reviews/:reviewId" element={<ReviewDetail />} />
+        <Route path="/projects/:projectName/reviews/:reviewId" element={<ReviewDetail />} />
       </Routes>
     </MemoryRouter>,
   );
