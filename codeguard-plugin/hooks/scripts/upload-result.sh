@@ -60,7 +60,7 @@ IFS='|' read -r PROJECT REVIEW_ID CRITICAL WARNING STYLE <<< "$METADATA"
 
 # --- Upload to CodeGuard server ---
 
-UPLOAD_URL="${CODEGUARD_SERVER}/api/v1/projects/${PROJECT}/reviews"
+UPLOAD_URL="${CODEGUARD_SERVER}/api/v1/reviews/"
 
 HTTP_RESPONSE=$(curl -s -w "\n%{http_code}" \
     -X POST \
