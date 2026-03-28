@@ -1,26 +1,14 @@
 {
-  "hooks": [
-    {
-      "event": "Stop",
-      "description": "Auto-trigger ReviewAgent when main agent completes",
-      "action": {
-        "type": "launch_agent",
-        "agent": "review-agent",
-        "env": {
-          "CODEGUARD_REVIEW_SCOPE": "task"
-        }
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '[CodeGuard] Task complete. Run /codeguard:review to trigger a code review.'"
+          }
+        ]
       }
-    },
-    {
-      "event": "SubagentStop",
-      "description": "Upload review results when ReviewAgent completes",
-      "filter": {
-        "agent": "review-agent"
-      },
-      "action": {
-        "type": "run_script",
-        "script": "hooks/scripts/upload-result.sh"
-      }
-    }
-  ]
+    ]
+  }
 }

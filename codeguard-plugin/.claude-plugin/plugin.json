@@ -1,12 +1,7 @@
 {
   "name": "codeguard",
-  "version": "0.1.0",
-  "description": "Automatic code review agent that runs after every task, producing evidence-backed findings with structured JSON reports.",
+  "version": "0.2.0",
+  "description": "Automatic code review agent that produces evidence-backed findings with structured JSON reports.",
   "author": "CodeGuard",
-  "license": "MIT",
-  "agents": ["agents/review-agent.md"],
-  "skills": ["skills/general-review", "skills/security-review", "skills/performance-review", "skills/output-format"],
-  "commands": ["commands/review.md"],
-  "hooks": "hooks/hooks.json",
-  "settings": "settings.json"
+  "license": "MIT"
 }
