@@ -47,7 +47,7 @@ HTTP_RESPONSE=$(curl -s -w "\n%{http_code}" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${CODEGUARD_API_KEY}" \
     -d @"$REVIEW_FILE" \
-    "${CODEGUARD_SERVER}/api/v1/reviews/" 2>/dev/null) || exit 0
+    "${CODEGUARD_SERVER}/api/v1/projects/${PROJECT}/reviews" 2>/dev/null) || exit 0
 
 HTTP_BODY=$(echo "$HTTP_RESPONSE" | head -n -1)
 HTTP_STATUS=$(echo "$HTTP_RESPONSE" | tail -n 1)
