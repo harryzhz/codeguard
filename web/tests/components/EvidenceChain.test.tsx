@@ -20,16 +20,16 @@ describe("EvidenceChain", () => {
     const stepNums = screen.getAllByTestId("step-number");
     expect(stepNums).toHaveLength(3);
     expect(stepNums[0]).toHaveTextContent("1");
-    expect(stepNums[0].style.backgroundColor).toBe("rgb(235, 245, 243)");
-    expect(stepNums[0].style.borderRadius).toBe("6px");
+    expect(stepNums[0].style.backgroundColor).toBe("rgb(255, 240, 238)");
+    expect(stepNums[0].style.borderRadius).toBe("50%");
   });
 
-  it("renders file refs in teal", () => {
+  it("renders file refs in muted color", () => {
     render(<EvidenceChain steps={steps} />);
     const fileRefs = screen.getAllByTestId("file-ref");
     expect(fileRefs).toHaveLength(2);
     expect(fileRefs[0]).toHaveTextContent("src/auth.ts:42");
-    expect(fileRefs[0].style.color).toBe("rgb(45, 122, 111)");
+    expect(fileRefs[0].style.color).toBe("rgb(170, 170, 170)");
   });
 
   it("renders code blocks with monospace on code-bg", () => {
@@ -37,13 +37,13 @@ describe("EvidenceChain", () => {
     const codeBlock = screen.getByTestId("code-block");
     expect(codeBlock).toHaveTextContent("eval(input)");
     expect(codeBlock.style.fontFamily).toBe("monospace");
-    expect(codeBlock.style.backgroundColor).toBe("rgb(245, 243, 239)");
+    expect(codeBlock.style.backgroundColor).toBe("rgb(247, 242, 242)");
   });
 
-  it("renders dashed connectors between steps", () => {
+  it("renders gradient connectors between steps", () => {
     render(<EvidenceChain steps={steps} />);
     const connectors = screen.getAllByTestId("connector");
     expect(connectors).toHaveLength(2);
-    expect(connectors[0].style.borderLeft).toBe("2px dashed rgb(214, 229, 226)");
+    expect(connectors[0].style.background).toBe("linear-gradient(to bottom, #FDD, #F7F2F2)");
   });
 });

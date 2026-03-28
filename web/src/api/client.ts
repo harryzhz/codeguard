@@ -37,7 +37,7 @@ export interface ReviewSummary {
   critical: number;
   warning: number;
   style: number;
-  tests_run: number;
+  tests_run: boolean;
   tests_passed: number;
   tests_failed: number;
 }
@@ -45,7 +45,8 @@ export interface ReviewSummary {
 export interface Review {
   id: string;
   project_id: string;
-  version: string;
+  version: number;
+  title: string;
   summary: ReviewSummary;
   files_changed: string[];
   created_at: string;
@@ -90,8 +91,8 @@ export function fetchReviews(projectName: string): Promise<Review[]> {
   return request<Review[]>(`/projects/${projectName}/reviews`);
 }
 
-export function fetchReview(projectName: string, reviewId: string): Promise<ReviewDetail> {
-  return request<ReviewDetail>(`/projects/${projectName}/reviews/${reviewId}`);
+export function fetchReview(projectName: string, version: string): Promise<ReviewDetail> {
+  return request<ReviewDetail>(`/projects/${projectName}/reviews/${version}`);
 }
 
 export function updateFindingStatus(

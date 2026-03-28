@@ -29,32 +29,32 @@ export function SummaryBar({ summary, children }: SummaryBarProps) {
         alignItems: "center",
         justifyContent: "space-between",
         backgroundColor: "#FFFFFF",
-        padding: "16px 24px",
-        borderRadius: "12px",
-        border: "1px solid #E5E1DB",
+        padding: "18px 24px",
+        borderRadius: "28px",
+        boxShadow: "inset 0 0 0 1.5px rgba(0,0,0,0.04)",
         flexWrap: "wrap",
-        gap: "12px",
+        gap: "14px",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
-        <span data-testid="total-count" style={{ fontSize: "14px", fontWeight: 600 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+        <span data-testid="total-count" style={{ fontSize: "15px", fontWeight: 700 }}>
           {summary.total_findings} findings
         </span>
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <Dot color="#D1453B" />
-          <span data-testid="critical-count" style={{ fontSize: "13px" }}>
+          <Dot color="#FA8072" />
+          <span data-testid="critical-count" style={{ fontSize: "13px", color: "#999" }}>
             {summary.critical} critical
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <Dot color="#C68B00" />
-          <span data-testid="warning-count" style={{ fontSize: "13px" }}>
+          <Dot color="#F5C563" />
+          <span data-testid="warning-count" style={{ fontSize: "13px", color: "#999" }}>
             {summary.warning} warning
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <Dot color="#7A7570" />
-          <span data-testid="style-count" style={{ fontSize: "13px" }}>
+          <Dot color="#98D0FF" />
+          <span data-testid="style-count" style={{ fontSize: "13px", color: "#999" }}>
             {summary.style} style
           </span>
         </div>

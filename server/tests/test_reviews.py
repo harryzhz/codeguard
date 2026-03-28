@@ -12,7 +12,6 @@ async def test_create_review_authenticated(client: AsyncClient):
     resp = await client.post(
         "/api/v1/projects/review-proj/reviews",
         json={
-            "version": "1.0",
             "summary": {"total": 1},
             "files_changed": ["a.py"],
             "findings": [
@@ -31,7 +30,7 @@ async def test_create_review_authenticated(client: AsyncClient):
     )
     assert resp.status_code == 201
     data = resp.json()
-    assert data["version"] == "1.0"
+    assert data["version"] == 1
     assert len(data["findings"]) == 1
 
 
@@ -39,7 +38,7 @@ async def test_create_review_unauthenticated(client: AsyncClient):
     await client.post("/api/v1/projects", json={"name": "review-proj2"})
     resp = await client.post(
         "/api/v1/projects/review-proj2/reviews",
-        json={"version": "1.0"},
+        json={},
         headers={"Authorization": "Bearer bad-key"},
     )
     assert resp.status_code == 401
@@ -49,7 +48,7 @@ async def test_create_review_no_bearer(client: AsyncClient):
     await client.post("/api/v1/projects", json={"name": "review-proj3"})
     resp = await client.post(
         "/api/v1/projects/review-proj3/reviews",
-        json={"version": "1.0"},
+        json={},
     )
     assert resp.status_code == 401
 
@@ -58,7 +57,7 @@ async def test_list_reviews(client: AsyncClient):
     await client.post("/api/v1/projects", json={"name": "review-proj4"})
     await client.post(
         "/api/v1/projects/review-proj4/reviews",
-        json={"version": "1.0"},
+        json={},
         headers={"Authorization": "Bearer test-api-key"},
     )
     resp = await client.get("/api/v1/projects/review-proj4/reviews")
@@ -70,16 +69,16 @@ async def test_get_review(client: AsyncClient):
     await client.post("/api/v1/projects", json={"name": "review-proj5"})
     create_resp = await client.post(
         "/api/v1/projects/review-proj5/reviews",
-        json={"version": "1.0"},
+        json={},
         headers={"Authorization": "Bearer test-api-key"},
     )
-    rid = create_resp.json()["id"]
-    resp = await client.get(f"/api/v1/projects/review-proj5/reviews/{rid}")
+    version = create_resp.json()["version"]
+    resp = await client.get(f"/api/v1/projects/review-proj5/reviews/{version}")
     assert resp.status_code == 200
-    assert resp.json()["id"] == rid
+    assert resp.json()["version"] == version
 
 
 async def test_get_review_not_found(client: AsyncClient):
     await client.post("/api/v1/projects", json={"name": "review-proj6"})
-    resp = await client.get("/api/v1/projects/review-proj6/reviews/nonexistent")
+    resp = await client.get("/api/v1/projects/review-proj6/reviews/999")
     assert resp.status_code == 404

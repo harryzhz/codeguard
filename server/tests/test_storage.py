@@ -48,7 +48,6 @@ async def test_create_review_with_findings(repo: PostgresReviewRepository):
     review = await repo.create_review(
         p.id,
         ReviewCreate(
-            version="2.0",
             summary={"total": 1},
             files_changed=["a.py"],
             findings=[
@@ -64,29 +63,15 @@ async def test_create_review_with_findings(repo: PostgresReviewRepository):
             ],
         ),
     )
-    assert review.version == "2.0"
+    assert review.version == 1
     assert len(review.findings) == 1
     assert review.findings[0].severity == "critical"
 
 
-async def test_get_review(repo: PostgresReviewRepository):
-    p = await repo.create_project(ProjectCreate(name="rp2"))
-    created = await repo.create_review(
-        p.id, ReviewCreate(version="1.0")
-    )
-    fetched = await repo.get_review(created.id)
-    assert fetched is not None
-    assert fetched.id == created.id
-
-
-async def test_get_review_not_found(repo: PostgresReviewRepository):
-    assert await repo.get_review("nonexistent") is None
-
-
 async def test_list_reviews(repo: PostgresReviewRepository):
     p = await repo.create_project(ProjectCreate(name="rp3"))
-    await repo.create_review(p.id, ReviewCreate(version="1.0"))
-    await repo.create_review(p.id, ReviewCreate(version="1.1"))
+    await repo.create_review(p.id, ReviewCreate())
+    await repo.create_review(p.id, ReviewCreate())
     reviews = await repo.list_reviews(p.id)
     assert len(reviews) == 2
 

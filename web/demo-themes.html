@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeGuard UI Theme Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Fira+Code:wght@400;500&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body { font-family: 'Inter', sans-serif; background: #f0f0f0; }
+
+  /* Tab bar */
+  .tab-bar {
+    position: sticky; top: 0; z-index: 200;
+    display: flex; justify-content: center; gap: 0;
+    background: #1a1a1a; padding: 0;
+  }
+  .tab-btn {
+    padding: 14px 32px; border: none; background: transparent;
+    color: #999; font-size: 15px; font-weight: 600; cursor: pointer;
+    font-family: inherit; border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { color: #ccc; }
+  .tab-btn.active { color: #fff; }
+
+  .theme-panel { display: none; min-height: 100vh; }
+  .theme-panel.active { display: block; }
+
+  /* Shared layout */
+  .page { padding: 0; }
+  .navbar {
+    padding: 16px 32px; display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+  .navbar .logo { font-size: 18px; font-weight: 700; }
+  .navbar .breadcrumb { font-size: 14px; opacity: 0.5; }
+  .navbar .breadcrumb a { text-decoration: none; }
+
+  .content { max-width: 960px; margin: 0 auto; padding: 24px; }
+
+  /* Summary bar */
+  .summary-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px; border-radius: 12px; flex-wrap: wrap; gap: 12px;
+    margin-bottom: 16px;
+  }
+  .summary-left { display: flex; align-items: center; gap: 24px; }
+  .summary-right { display: flex; align-items: center; gap: 8px; }
+  .stat { font-size: 14px; font-weight: 600; }
+  .stat-item { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+  /* Filter buttons */
+  .filter-btn {
+    padding: 6px 14px; border-radius: 6px; font-size: 13px;
+    font-weight: 500; cursor: pointer; font-family: inherit; border: none;
+  }
+  .filter-btn.outline { background: transparent; }
+
+  /* Action buttons */
+  .btn-primary {
+    padding: 6px 14px; border-radius: 6px; border: none;
+    color: #fff; font-size: 13px; font-weight: 500;
+    cursor: pointer; font-family: inherit; white-space: nowrap;
+  }
+  .btn-outline {
+    padding: 6px 14px; border-radius: 6px;
+    font-size: 13px; font-weight: 500; background: transparent;
+    cursor: pointer; font-family: inherit; white-space: nowrap;
+  }
+
+  /* Finding card */
+  .finding-card {
+    border-radius: 12px; overflow: hidden; margin-bottom: 12px;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .finding-card:hover { transform: translateY(-1px); }
+  .finding-header {
+    padding: 16px 20px; display: flex; align-items: center;
+    justify-content: space-between; gap: 12px;
+  }
+  .finding-left { display: flex; align-items: center; gap: 12px; flex: 1; }
+  .finding-right { display: flex; align-items: center; gap: 8px; }
+  .severity-badge {
+    border-radius: 6px; font-size: 11px; font-weight: 600;
+    padding: 2px 8px; text-transform: capitalize;
+  }
+  .finding-title { font-size: 14px; font-weight: 600; }
+  .confidence { font-size: 12px; opacity: 0.5; }
+  .status-badge {
+    font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px;
+  }
+
+  /* Finding body */
+  .finding-body { padding: 0 20px 20px; }
+  .finding-desc { font-size: 14px; margin-bottom: 16px; line-height: 1.6; }
+  .section-title {
+    font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.5px; margin-bottom: 8px; opacity: 0.5;
+  }
+
+  /* Evidence chain */
+  .evidence-step {
+    display: flex; gap: 12px; margin-bottom: 12px;
+  }
+  .step-indicator {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .step-num {
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; flex-shrink: 0;
+  }
+  .step-line { width: 2px; flex: 1; min-height: 20px; border-radius: 1px; }
+  .step-content { flex: 1; }
+  .step-obs { font-size: 13px; margin-bottom: 4px; }
+  .step-file { font-size: 12px; opacity: 0.5; margin-bottom: 4px; }
+  .step-code {
+    padding: 8px 12px; border-radius: 6px; font-size: 12px;
+    line-height: 1.5; overflow-x: auto;
+  }
+
+  /* Suggestion */
+  .suggestion-box {
+    padding: 12px; border-radius: 8px; font-size: 13px;
+    line-height: 1.6; margin-bottom: 16px;
+  }
+  .suggestion-box code {
+    padding: 2px 6px; border-radius: 4px; font-size: 12px;
+  }
+
+  /* Action buttons row */
+  .action-row {
+    display: flex; gap: 8px; justify-content: flex-end;
+  }
+  .btn-dismiss {
+    padding: 8px 20px; border-radius: 8px; font-size: 13px;
+    font-weight: 500; cursor: pointer; font-family: inherit;
+  }
+  .btn-accept {
+    padding: 8px 20px; border-radius: 8px; border: none;
+    color: #fff; font-size: 13px; font-weight: 500;
+    cursor: pointer; font-family: inherit;
+  }
+
+  .theme-label {
+    text-align: center; padding: 32px 24px 8px; font-size: 28px; font-weight: 700;
+  }
+  .theme-sub {
+    text-align: center; font-size: 14px; opacity: 0.5; margin-bottom: 24px;
+  }
+</style>
+</head>
+<body>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showTheme('indigo', this)" style="border-bottom-color: #5B5FC7;">Electric Indigo</button>
+  <button class="tab-btn" onclick="showTheme('coral', this)" style="border-bottom-color: transparent;">Warm Coral</button>
+  <button class="tab-btn" onclick="showTheme('teal', this)" style="border-bottom-color: transparent;">Ocean Teal</button>
+  <button class="tab-btn" onclick="showTheme('nev', this)" style="border-bottom-color: transparent;">Nev Flynn</button>
+</div>
+
+<!-- ==================== ELECTRIC INDIGO ==================== -->
+<div id="theme-indigo" class="theme-panel active" style="background: #FAFAFE; font-family: 'Inter', sans-serif;">
+  <div class="page">
+    <div class="navbar" style="background: #fff; border-bottom-color: #E8E8F0;">
+      <span class="logo" style="color: #5B5FC7;">&#9670; CodeGuard</span>
+      <span class="breadcrumb" style="color: #1A1D2E;">/ <a href="#" style="color: #5B5FC7;">Projects</a> / <a href="#" style="color: #5B5FC7;">codeguard</a> / v5</span>
+    </div>
+    <div class="content">
+      <div class="theme-label" style="color: #1A1D2E;">Electric Indigo</div>
+      <div class="theme-sub" style="color: #6B6B80;">灵感：Stripe + Mixpanel &nbsp;|&nbsp; 字体：Inter + JetBrains Mono</div>
+
+      <div class="summary-bar" style="background: #fff; box-shadow: 0 1px 3px rgba(91,95,199,0.08);">
+        <div class="summary-left">
+          <span class="stat" style="color: #1A1D2E;">6 findings</span>
+          <span class="stat-item"><span class="dot" style="background: #E5484D;"></span><span style="color: #6B6B80;">1 critical</span></span>
+          <span class="stat-item"><span class="dot" style="background: #E5930A;"></span><span style="color: #6B6B80;">2 warning</span></span>
+          <span class="stat-item"><span class="dot" style="background: #8B8B9E;"></span><span style="color: #6B6B80;">3 style</span></span>
+        </div>
+        <div class="summary-right">
+          <button class="filter-btn" style="background: #5B5FC7; color: #fff;">All</button>
+          <button class="filter-btn outline" style="color: #6B6B80; border: 1px solid #E8E8F0;">Critical</button>
+          <button class="filter-btn outline" style="color: #6B6B80; border: 1px solid #E8E8F0;">Warning</button>
+          <button class="filter-btn outline" style="color: #6B6B80; border: 1px solid #E8E8F0;">Style</button>
+          <button class="btn-primary" style="background: #5B5FC7;">Accept All (3)</button>
+          <button class="btn-outline" style="color: #5B5FC7; border: 1px solid #5B5FC7;">Copy Fix Prompt (3)</button>
+        </div>
+      </div>
+
+      <!-- Critical - expanded -->
+      <div class="finding-card" style="background: #fff; border: 1px solid #E8E8F0; border-left: 4px solid #E5484D; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+        <div class="finding-header">
+          <div class="finding-left">
+            <span class="severity-badge" style="color: #E5484D; background: #FFF0F0;">critical</span>
+            <span class="finding-title" style="color: #1A1D2E;">PATCH /findings/{id} 端点未受 API Key 保护</span>
+          </div>
+          <div class="finding-right">
+            <span class="status-badge" style="color: #5B5FC7; background: #EDEDFD;">Accepted</span>
+            <span class="confidence" style="color: #6B6B80;">95%</span>
+            <span style="color: #6B6B80;">&#9650;</span>
+          </div>
+        </div>
+        <div class="finding-body">
+          <p class="finding-desc" style="color: #1A1D2E;">update_finding_status 端点缺少 verify_api_key 依赖注入，任何人都可以无需认证修改 finding 状态。</p>
+          <div class="section-title" style="color: #6B6B80;">Evidence Chain</div>
+          <div style="margin-bottom: 16px;">
+            <div class="evidence-step">
+              <div class="step-indicator">
+                <div class="step-num" style="background: #EDEDFD; color: #5B5FC7;">1</div>
+                <div class="step-line" style="background: #EDEDFD;"></div>
+              </div>
+              <div class="step-content">
+                <div class="step-obs" style="color: #1A1D2E;">端点定义缺少 auth 依赖</div>
+                <div class="step-file" style="color: #6B6B80;">server/app/api/v1/findings.py:12</div>
+                <div class="step-code" style="background: #F5F5FA; font-family: 'JetBrains Mono', monospace; color: #1A1D2E;">@router.patch("/{finding_id}")</div>
+              </div>
+            </div>
+            <div class="evidence-step">
+              <div class="step-indicator">
+                <div class="step-num" style="background: #EDEDFD; color: #5B5FC7;">2</div>
+              </div>
+              <div class="step-content">
+                <div class="step-obs" style="color: #1A1D2E;">其他写入端点均有 verify_api_key</div>
+                <div class="step-file" style="color: #6B6B80;">server/app/api/v1/reviews.py:18</div>
+                <div class="step-code" style="background: #F5F5FA; font-family: 'JetBrains Mono', monospace; color: #1A1D2E;">_auth=Depends(verify_api_key)</div>
+              </div>
+            </div>
+          </div>
+          <div class="section-title" style="color: #6B6B80;">Suggestion</div>
+          <div class="suggestion-box" style="background: #F5F5FA; color: #1A1D2E;">
+            添加 <code style="background: #EDEDFD; color: #5B5FC7;">_auth=Depends(verify_api_key)</code> 到 update_finding_status 的参数列表中。
+          </div>
+          <div class="action-row">
+            <button class="btn-dismiss" style="background: #F5F5FA; border: 1px solid #E8E8F0; color: #1A1D2E;">Dismiss</button>
+            <button class="btn-accept" style="background: #5B5FC7;">Accept</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Warning - collapsed -->
+      <div class="finding-card" style="background: #fff; border: 1px solid #E8E8F0; border-left: 4px solid #E5930A; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+        <div class="finding-header">
+          <div class="finding-left">
+            <span class="severity-badge" style="color: #E5930A; background: #FFF8EB;">warning</span>
+            <span class="finding-title" style="color: #1A1D2E;">create_project 使用全表扫描检查重复名称（N 效率问题）</span>
+          </div>
+          <div class="finding-right">
+            <span class="confidence" style="color: #6B6B80;">85%</span>
+            <span style="color: #6B6B80;">&#9660;</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Warning - collapsed -->
+      <div class="finding-card" style="background: #fff; border: 1px solid #E8E8F0; border-left: 4px solid #E5930A; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+        <div class="finding-header">
+          <div class="finding-left">
+            <span class="severity-badge" style="color: #E5930A; background: #FFF8EB;">warning</span>
+            <span class="finding-title" style="color: #1A1D2E;">docker-compose.yml 中 web 服务未挂载前端构建产物</span>
+          </div>
+          <div class="finding-right">
+            <span class="status-badge" style="color: #8B8B9E; background: #F0F0F5;">Dismissed</span>
+            <span class="confidence" style="color: #6B6B80;">80%</span>
+            <span style="color: #6B6B80;">&#9660;</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Style - collapsed -->
+      <div class="finding-card" style="background: #fff; border: 1px solid #E8E8F0; border-left: 4px solid #B8B8C8; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+        <div class="finding-header">
+          <div class="finding-left">
+            <span class="severity-badge" style="color: #8B8B9E; background: #F0F0F5;">style</span>
+            <span class="finding-title" style="color: #1A1D2E;">Settings 实例在每次请求中重复创建</span>
+          </div>
+          <div class="finding-right">
+            <span class="confidence" style="color: #6B6B80;">75%</span>
+            <span style="color: #6B6B80;">&#9660;</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== WARM CORAL ==================== -->
+<div id="theme-coral" class="theme-panel" style="background: #FFFBF8; font-family: 'DM Sans', sans-serif;">
+  <div class="page">
+    <div class="navbar" style="background: #fff; border-bottom-color: #E7E5E4;">
+      <span class="logo" style="color: #E8573A;">&#9830; CodeGuard</span>
+      <span class="breadcrumb" style="color: #1C1917;">/ <a href="#" style="color: #E8573A;">Projects</a> / <a href="#" style="color: #E8573A;">codeguard</a> / v5</span>
+    </div>
+    <div class="content">
+      <div class="theme-label" style="color: #1C1917;">Warm Coral</div>
+      <div class="theme-sub" style="color: #78716C;">灵感：Dub + Campsite &nbsp;|&nbsp; 字体：DM Sans + Fira Code</div>
+
+      <div class="summary-bar" style="background: #fff; border: 1px solid #E7E5E4;">
+        <div class="summary-left">
+          <span class="stat" style="color: #1C1917;">6 findings</span>
+          <span class="stat-item"><span class="dot" style="background: #DC2626;"></span><span style="color: #78716C;">1 critical</span></span>
+          <span class="stat-item"><span class="dot" style="background: #D97706;"></span><span style="color: #78716C;">2 warning</span></span>
+          <span class="stat-item"><span class="dot" style="background: #A8A29E;"></span><span style="color: #78716C;">3 style</span></span>
+        </div>
+        <div class="summary-right">
+          <button class="filter-btn" style="background: #E8573A; color: #fff;">All</button>
+          <button class="filter-btn outline" style="color: #78716C; border: 1px solid #E7E5E4;">Critical</button>
+          <button class="filter-btn outline" style="color: #78716C; border: 1px solid #E7E5E4;">Warning</button>
+          <button class="filter-btn outline" style="color: #78716C; border: 1px solid #E7E5E4;">Style</button>
+          <button class="btn-primary" style="background: linear-gradient(135deg, #E8573A, #F27D3A);">Accept All (3)</button>
+          <button class="btn-outline" style="color: #E8573A; border: 1px solid #E8573A;">Copy Fix Prompt (3)</button>
+        </div>
+      </div>
+
+      <!-- Critical - expanded -->
+      <div class="finding-card" style="background: #fff; border: 1px solid #E7E5E4; border-left: 4px solid #DC2626;">
+        <div class="finding-header">
+          <div class="finding-left">
+            <span class="severity-badge" style="color: #DC2626; background: #FEF2F2;">CRITICAL</span>
+            <span class="finding-title" style="color: #1C1917;">PATCH /findings/{id} 端点未受 API Key 保护</span>
+          </div>
+          <div class="finding-right">
+            <span class="status-badge" style="color: #E8573A; background: #FFF0EC;">Accepted</span>
+            <span class="confidence" style="color: #78716C;">95%</span>
+            <span style="color: #78716C;">&#9650;</span>
+          </div>
+        </div>
+        <div class="finding-body">
+          <p class="finding-desc" style="color: #1C1917;">update_finding_status 端点缺少 verify_api_key 依赖注入，任何人都可以无需认证修改 finding 状态。</p>
+          <div class="section-title" style="color: #78716C;">Evidence Chain</div>
+          <div style="margin-bottom: 16px;">
+            <div class="evidence-step">
+              <div class="step-indicator">
+                <div class="step-num" style="background: #FFF0EC; color: #E8573A;">1</div>
+                <div class="step-line" style="background: #FDE8E1;"></div>
+              </div>
+              <div class="step-content">
+                <div class="step-obs" style="color: #1C1917;">端点定义缺少 auth 依赖</div>
+                <div class="step-file" style="color: #78716C;">server/app/api/v1/findings.py:12</div>
+                <div class="step-code" style="background: #FDF8F5; font-family: 'Fira Code', monospace; color: #1C1917;">@router.patch("/{finding_id}")</div>
+              </div>
+            </div>
+            <div class="evidence-step">
+              <div class="step-indicator">
+                <div class="step-num" style="background: #FFF0EC; color: #E8573A;">2</div>
+              </div>
+              <div class="step-content">
+                <div class="step-obs" style="color: #1C1917;">其他写入端点均有 verify_api_key</div>
+                <div class="step-file" style="color: #78716C;">server/app/api/v1/reviews.py:18</div>
+                <div class="step-code" style="background: #FDF8F5; font-family: 'Fira Code', monospace; color: #1C1917;">_auth=Depends(verify_api_key)</div>
+              </div>
+            </div>
+          </div>
+          <div class="section-title" style="color: #78716C;">Suggestion</div>
+          <div class="suggestion-box" style="background: #FDF8F5; color: #1C1917;">
+            添加 <code style="background: #FFF0EC; color: #E8573A;">_auth=Depends(verify_api_key)</code> 到 update_finding_status 的参数列表中。
+          </div>
+          <div class="action-row">
+            <button class="btn-dismiss" style="background: #F5F5F4; border: 1px solid #E7E5E4; color: #1C1917;">Dismiss</button>
+            <button class="btn-accept" style="background: linear-gradient(135deg, #E8573A, #F27D3A);">Accept</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Warning -->
+      <div class="finding-card" style="background: #fff; border: 1px solid #E7E5E4; border-left: 4px solid #D97706;">
+        <div class="finding-header">
+          <div class="finding-left">
+            <span class="severity-badge" style="color: #D97706; background: #FFFBEB; letter-spacing: 0.5px;">WARNING</span>
+            <span class="finding-title" style="color: #1C1917;">create_project 使用全表扫描检查重复名称（N 效率问题）</span>
+          </div>
+          <div class="finding-right">
+            <span class="confidence" style="color: #78716C;">85%</span>
+            <span style="color: #78716C;">&#9660;</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Warning -->
+      <div class="finding-card" style="background: #fff; border: 1px solid #E7E5E4; border-left: 4px solid #D97706;">
+        <div class="finding-header">
+          <div class="finding-left">
+            <span class="severity-badge" style="color: #D97706; background: #FFFBEB; letter-spacing: 0.5px;">WARNING</span>
+            <span class="finding-title" style="color: #1C1917;">docker-compose.yml 中 web 服务未挂载前端构建产物</span>
+          </div>
+          <div class="finding-right">
+            <span class="status-badge" style="color: #78716C; background: #F5F5F4;">Dismissed</span>
+            <span class="confidence" style="color: #78716C;">80%</span>
+            <span style="color: #78716C;">&#9660;</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Style -->
+      <div class="finding-card" style="background: #fff; border: 1px solid #E7E5E4; border-left: 4px solid #D6D3D1;">
+        <div class="finding-header">
+          <div class="finding-left">
+            <span class="severity-badge" style="color: #78716C; background: #F5F5F4; letter-spacing: 0.5px;">STYLE</span>
+            <span class="finding-title" style="color: #1C1917;">Settings 实例在每次请求中重复创建</span>
+          </div>
+          <div class="finding-right">
+            <span class="confidence" style="color: #78716C;">75%</span>
+            <span style="color: #78716C;">&#9660;</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== OCEAN TEAL ==================== -->
+<div id="theme-teal" class="theme-panel" style="background: #F8FFFE; font-family: 'Plus Jakarta Sans', sans-serif;">
+  <div class="page">
+    <div class="navbar" style="background: #fff; border-bottom-color: #E2EBE9;">
+      <span class="logo" style="color: #0D9488;">&#9733; CodeGuard</span>
+      <span class="breadcrumb" style="color: #0F172A;">/ <a href="#" style="color: #0D9488;">Projects</a> / <a href="#" style="color: #0D9488;">codeguard</a> / v5</span>
+    </div>
+    <div class="content">
+      <div class="theme-label" style="color: #0F172A;">Ocean Teal</div>
+      <div class="theme-sub" style="color: #64748B;">灵感：Wise + Amie &nbsp;|&nbsp; 字体：Plus Jakarta Sans + Source Code Pro</div>
+
+      <div class="summary-bar" style="background: #fff; box-shadow: 0 1px 3px rgba(13,148,136,0.06); border: 1px solid #E2EBE9;">
+        <div class="summary-left">
+          <span class="stat" style="color: #0F172A;">6 findings</span>
+          <span class="stat-item"><span class="dot" style="background: #EF4444;"></span><span style="color: #64748B;">1 critical</span></span>
+          <span class="stat-item"><span class="dot" style="background: #F59E0B;"></span><span style="color: #64748B;">2 warning</span></span>
+          <span class="stat-item"><span class="dot" style="background: #94A3B8;"></span><span style="color: #64748B;">3 style</span></span>
+        </div>
+        <div class="summary-right">
+          <button class="filter-btn" style="background: #0D9488; color: #fff;">All</button>
+          <button class="filter-btn outline" style="color: #64748B; border: 1px solid #E2EBE9;">Critical</button>
+          <button class="filter-btn outline" style="color: #64748B; border: 1px solid #E2EBE9;">Warning</button>
+          <button class="filter-btn outline" style="color: #64748B; border: 1px solid #E2EBE9;">Style</button>
+          <button class="btn-primary" style="background: linear-gradient(135deg, #0D9488, #06B6D4);">Accept All (3)</button>
+          <button class="btn-outline" style="color: #0D9488; border: 1px solid #0D9488;">Copy Fix Prompt (3)</button>
+        </div>
+      </div>
+
+      <!-- Critical - expanded -->
+      <div class="finding-card" style="background: #fff; border: 1px solid #E2EBE9; border-left: 4px solid #EF4444; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+        <div class="finding-header">
+          <div class="finding-left">
+            <span class="severity-badge" style="color: #EF4444; background: #FEF2F2;">critical</span>
+            <span class="finding-title" style="color: #0F172A;">PATCH /findings/{id} 端点未受 API Key 保护</span>
+          </div>
+          <div class="finding-right">
+            <span class="status-badge" style="color: #0D9488; background: #E6FAF8;">Accepted</span>
+            <span class="confidence" style="color: #64748B;">95%</span>
+            <span style="color: #64748B;">&#9650;</span>
+          </div>
+        </div>
+        <div class="finding-body">
+          <p class="finding-desc" style="color: #0F172A;">update_finding_status 端点缺少 verify_api_key 依赖注入，任何人都可以无需认证修改 finding 状态。</p>
+          <div class="section-title" style="color: #64748B;">Evidence Chain</div>
+          <div style="margin-bottom: 16px;">
+            <div class="evidence-step">
+              <div class="step-indicator">
+                <div class="step-num" style="background: #E6FAF8; color: #0D9488;">1</div>
+                <div class="step-line" style="background: #CCF5F0;"></div>
+              </div>
+              <div class="step-content">
+                <div class="step-obs" style="color: #0F172A;">端点定义缺少 auth 依赖</div>
+                <div class="step-file" style="color: #64748B;">server/app/api/v1/findings.py:12</div>
+                <div class="step-code" style="background: #F0FDFA; font-family: 'Source Code Pro', monospace; color: #0F172A;">@router.patch("/{finding_id}")</div>
+              </div>
+            </div>
+            <div class="evidence-step">
+              <div class="step-indicator">
+                <div class="step-num" style="background: #E6FAF8; color: #0D9488;">2</div>
+              </div>
+              <div class="step-content">
+                <div class="step-obs" style="color: #0F172A;">其他写入端点均有 verify_api_key</div>
+                <div class="step-file" style="color: #64748B;">server/app/api/v1/reviews.py:18</div>
+                <div class="step-code" style="background: #F0FDFA; font-family: 'Source Code Pro', monospace; color: #0F172A;">_auth=Depends(verify_api_key)</div>
+              </div>
+            </div>
+          </div>
+          <div class="section-title" style="color: #64748B;">Suggestion</div>
+          <div class="suggestion-box" style="background: #F0FDFA; color: #0F172A;">
+            添加 <code style="background: #E6FAF8; color: #0D9488;">_auth=Depends(verify_api_key)</code> 到 update_finding_status 的参数列表中。
+          </div>
+          <div class="action-row">
+            <button class="btn-dismiss" style="background: #F1F5F9; border: 1px solid #E2EBE9; color: #0F172A;">Dismiss</button>
+            <button class="btn-accept" style="background: linear-gradient(135deg, #0D9488, #06B6D4);">Accept</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Warning -->
+      <div class="finding-card" style="background: #fff; border: 1px solid #E2EBE9; border-left: 4px solid #F59E0B; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+        <div class="finding-header">
+          <div class="finding-left">
+            <span class="severity-badge" style="color: #F59E0B; background: #FFFBEB;">warning</span>
+            <span class="finding-title" style="color: #0F172A;">create_project 使用全表扫描检查重复名称（N 效率问题）</span>
+          </div>
+          <div class="finding-right">
+            <span class="confidence" style="color: #64748B;">85%</span>
+            <span style="color: #64748B;">&#9660;</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Warning -->
+      <div class="finding-card" style="background: #fff; border: 1px solid #E2EBE9; border-left: 4px solid #F59E0B; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+        <div class="finding-header">
+          <div class="finding-left">
+            <span class="severity-badge" style="color: #F59E0B; background: #FFFBEB;">warning</span>
+            <span class="finding-title" style="color: #0F172A;">docker-compose.yml 中 web 服务未挂载前端构建产物</span>
+          </div>
+          <div class="finding-right">
+            <span class="status-badge" style="color: #64748B; background: #F1F5F9;">Dismissed</span>
+            <span class="confidence" style="color: #64748B;">80%</span>
+            <span style="color: #64748B;">&#9660;</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Style -->
+      <div class="finding-card" style="background: #fff; border: 1px solid #E2EBE9; border-left: 4px solid #CBD5E1; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+        <div class="finding-header">
+          <div class="finding-left">
+            <span class="severity-badge" style="color: #64748B; background: #F1F5F9;">style</span>
+            <span class="finding-title" style="color: #0F172A;">Settings 实例在每次请求中重复创建</span>
+          </div>
+          <div class="finding-right">
+            <span class="confidence" style="color: #64748B;">75%</span>
+            <span style="color: #64748B;">&#9660;</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== NEV FLYNN STYLE ==================== -->
+<div id="theme-nev" class="theme-panel" style="background: #F7F2F2; font-family: 'DM Sans', sans-serif;">
+  <style>
+    #theme-nev .nev-card {
+      background: #fff;
+      border-radius: 28px;
+      border: none;
+      box-shadow: inset 0 0 0 2px transparent;
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+    #theme-nev .nev-card:hover {
+      box-shadow: inset 0 0 0 2px #6ED2B7;
+      transform: translateY(-3px);
+    }
+    #theme-nev .nev-card.severity-critical:hover { box-shadow: inset 0 0 0 2px #FA8072; }
+    #theme-nev .nev-card.severity-warning:hover { box-shadow: inset 0 0 0 2px #F5C563; }
+    #theme-nev .nev-card.severity-style:hover { box-shadow: inset 0 0 0 2px #98D0FF; }
+    #theme-nev .nev-nav {
+      display: inline-flex; gap: 4px; background: #fff;
+      border-radius: 20px; padding: 4px;
+      box-shadow: inset 0 0 0 1.5px rgba(0,0,0,0.06);
+    }
+    #theme-nev .nev-nav button {
+      padding: 8px 18px; border-radius: 16px; border: none;
+      font-size: 13px; font-weight: 500; cursor: pointer;
+      font-family: inherit; background: transparent; color: #666;
+      transition: all 0.3s ease;
+    }
+    #theme-nev .nev-nav button:hover { background: #F7F2F2; color: #1a1a1a; }
+    #theme-nev .nev-nav button.active { background: #1a1a1a; color: #fff; }
+    #theme-nev .nev-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 18px; border-radius: 20px; border: none;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      font-family: inherit; transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    #theme-nev .nev-pill:hover { transform: scale(1.04); }
+    #theme-nev .nev-pill:active { transform: scale(0.97); }
+    #theme-nev .nev-pill.primary { background: #1a1a1a; color: #fff; }
+    #theme-nev .nev-pill.primary:hover { background: #333; }
+    #theme-nev .nev-pill.outline { background: #fff; color: #1a1a1a; box-shadow: inset 0 0 0 1.5px rgba(0,0,0,0.12); }
+    #theme-nev .nev-pill.outline:hover { box-shadow: inset 0 0 0 1.5px #6ED2B7; color: #0D9488; }
+    #theme-nev .nev-pill.mint { background: #6ED2B7; color: #fff; }
+    #theme-nev .nev-pill.mint:hover { background: #5EC4A8; }
+    #theme-nev .nev-arrow {
+      width: 36px; height: 36px; border-radius: 50%; border: none;
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 14px; transition: all 0.3s ease;
+      background: #1a1a1a; color: #fff;
+    }
+    #theme-nev .nev-arrow:hover { transform: scale(1.12) rotate(-8deg); background: #6ED2B7; }
+    #theme-nev .nev-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 12px; border-radius: 20px; font-size: 11px;
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    #theme-nev .nev-status {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;
+    }
+    #theme-nev .nev-step-dot {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; flex-shrink: 0;
+      transition: all 0.3s ease;
+    }
+    #theme-nev .evidence-step:hover .nev-step-dot { transform: scale(1.15); }
+    #theme-nev .nev-code {
+      padding: 10px 14px; border-radius: 14px; font-size: 12.5px;
+      line-height: 1.5; font-family: 'JetBrains Mono', monospace;
+      background: #F7F2F2;
+    }
+    #theme-nev .nev-btn-row button {
+      padding: 10px 24px; border-radius: 20px; font-size: 13px;
+      font-weight: 600; cursor: pointer; font-family: inherit;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    #theme-nev .nev-btn-row button:hover { transform: scale(1.04); }
+    #theme-nev .nev-btn-row button:active { transform: scale(0.97); }
+  </style>
+
+  <div class="page">
+    <!-- Nav -->
+    <div style="padding: 16px 32px; display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <span style="font-size: 20px; font-weight: 800; color: #1a1a1a; letter-spacing: -0.5px;">
+          <span style="color: #6ED2B7;">&#9679;</span> CodeGuard
+        </span>
+        <span style="font-size: 13px; color: #999;">
+          / <a href="#" style="color: #6ED2B7; text-decoration: none;">Projects</a>
+          / <a href="#" style="color: #6ED2B7; text-decoration: none;">codeguard</a>
+          / v5
+        </span>
+      </div>
+      <button class="nev-arrow" title="Settings" style="font-size: 16px;">&#9881;</button>
+    </div>
+
+    <div class="content">
+      <div class="theme-label" style="color: #1a1a1a;">Nev Flynn</div>
+      <div class="theme-sub" style="color: #999;">灵感：nevflynn.com &nbsp;|&nbsp; 圆角 28px + inset border 动效 + 药丸按钮 + 箭头图标</div>
+
+      <!-- Summary bar -->
+      <div style="background: #fff; border-radius: 28px; padding: 18px 24px; margin-bottom: 16px; box-shadow: inset 0 0 0 1.5px rgba(0,0,0,0.04);">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+          <div style="display: flex; align-items: center; gap: 20px;">
+            <span style="font-size: 15px; font-weight: 700; color: #1a1a1a;">6 findings</span>
+            <span class="stat-item"><span class="dot" style="background: #FA8072;"></span><span style="color: #999; font-size: 13px;">1 critical</span></span>
+            <span class="stat-item"><span class="dot" style="background: #F5C563;"></span><span style="color: #999; font-size: 13px;">2 warning</span></span>
+            <span class="stat-item"><span class="dot" style="background: #98D0FF;"></span><span style="color: #999; font-size: 13px;">3 style</span></span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <div class="nev-nav">
+              <button class="active">All</button>
+              <button>Critical</button>
+              <button>Warning</button>
+              <button>Style</button>
+            </div>
+            <button class="nev-pill mint">
+              <span>&#10003;</span> Accept All (3)
+            </button>
+            <button class="nev-pill outline">
+              <span>&#8599;</span> Copy Fix Prompt (3)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Critical finding - expanded -->
+      <div class="nev-card severity-critical">
+        <div class="finding-header" style="padding: 18px 24px;">
+          <div class="finding-left">
+            <span class="nev-badge" style="color: #D44A3A; background: #FFF0EE;">
+              <span style="width: 6px; height: 6px; border-radius: 50%; background: #FA8072; display: inline-block;"></span>
+              Critical
+            </span>
+            <span class="finding-title" style="color: #1a1a1a; font-size: 15px;">PATCH /findings/{id} 端点未受 API Key 保护</span>
+          </div>
+          <div class="finding-right" style="gap: 10px;">
+            <span class="nev-status" style="color: #0D9488; background: #E6FAF5;">
+              <span style="width: 6px; height: 6px; border-radius: 50%; background: #6ED2B7; display: inline-block;"></span>
+              Accepted
+            </span>
+            <span style="font-size: 12px; color: #aaa; font-weight: 500;">95%</span>
+            <button class="nev-arrow" style="width: 30px; height: 30px; font-size: 12px; background: #F7F2F2; color: #1a1a1a;">&#9650;</button>
+          </div>
+        </div>
+        <div style="padding: 0 24px 24px;">
+          <p style="font-size: 14px; color: #444; margin-bottom: 20px; line-height: 1.7;">
+            update_finding_status 端点缺少 verify_api_key 依赖注入，任何人都可以无需认证修改 finding 状态。
+          </p>
+
+          <div style="margin-bottom: 20px;">
+            <div style="font-size: 11px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Evidence Chain</div>
+            <div class="evidence-step" style="margin-bottom: 14px;">
+              <div class="step-indicator">
+                <div class="nev-step-dot" style="background: #FFF0EE; color: #FA8072;">1</div>
+                <div class="step-line" style="background: linear-gradient(to bottom, #FDD, #F7F2F2); width: 2px; border-radius: 2px;"></div>
+              </div>
+              <div class="step-content">
+                <div style="font-size: 13px; color: #1a1a1a; font-weight: 500; margin-bottom: 4px;">端点定义缺少 auth 依赖</div>
+                <div style="font-size: 12px; color: #aaa; margin-bottom: 6px;">server/app/api/v1/findings.py:12</div>
+                <div class="nev-code">@router.patch("/{finding_id}")</div>
+              </div>
+            </div>
+            <div class="evidence-step">
+              <div class="step-indicator">
+                <div class="nev-step-dot" style="background: #FFF0EE; color: #FA8072;">2</div>
+              </div>
+              <div class="step-content">
+                <div style="font-size: 13px; color: #1a1a1a; font-weight: 500; margin-bottom: 4px;">其他写入端点均有 verify_api_key</div>
+                <div style="font-size: 12px; color: #aaa; margin-bottom: 6px;">server/app/api/v1/reviews.py:18</div>
+                <div class="nev-code">_auth=Depends(verify_api_key)</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <div style="font-size: 11px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Suggestion</div>
+            <div style="background: #F7F2F2; padding: 14px 18px; border-radius: 16px; font-size: 13px; line-height: 1.7; color: #444;">
+              添加 <code style="background: #E6FAF5; color: #0D9488; padding: 2px 8px; border-radius: 8px; font-size: 12px; font-family: 'JetBrains Mono', monospace;">_auth=Depends(verify_api_key)</code> 到 update_finding_status 的参数列表中。
+            </div>
+          </div>
+
+          <div class="nev-btn-row" style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button style="background: #F7F2F2; border: none; color: #666;">Dismiss</button>
+            <button style="background: #1a1a1a; border: none; color: #fff;">
+              &#10003; Accept
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Warning - collapsed -->
+      <div class="nev-card severity-warning">
+        <div class="finding-header" style="padding: 18px 24px;">
+          <div class="finding-left">
+            <span class="nev-badge" style="color: #B8860B; background: #FFF8E7;">
+              <span style="width: 6px; height: 6px; border-radius: 50%; background: #F5C563; display: inline-block;"></span>
+              Warning
+            </span>
+            <span class="finding-title" style="color: #1a1a1a; font-size: 15px;">create_project 使用全表扫描检查重复名称（N 效率问题）</span>
+          </div>
+          <div class="finding-right" style="gap: 10px;">
+            <span style="font-size: 12px; color: #aaa; font-weight: 500;">85%</span>
+            <button class="nev-arrow" style="width: 30px; height: 30px; font-size: 12px; background: #F7F2F2; color: #1a1a1a;">&#9660;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Warning - dismissed -->
+      <div class="nev-card severity-warning">
+        <div class="finding-header" style="padding: 18px 24px;">
+          <div class="finding-left">
+            <span class="nev-badge" style="color: #B8860B; background: #FFF8E7;">
+              <span style="width: 6px; height: 6px; border-radius: 50%; background: #F5C563; display: inline-block;"></span>
+              Warning
+            </span>
+            <span class="finding-title" style="color: #1a1a1a; font-size: 15px;">docker-compose.yml 中 web 服务未挂载前端构建产物</span>
+          </div>
+          <div class="finding-right" style="gap: 10px;">
+            <span class="nev-status" style="color: #999; background: #F0EEEB;">
+              Dismissed
+            </span>
+            <span style="font-size: 12px; color: #aaa; font-weight: 500;">80%</span>
+            <button class="nev-arrow" style="width: 30px; height: 30px; font-size: 12px; background: #F7F2F2; color: #1a1a1a;">&#9660;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Style - collapsed -->
+      <div class="nev-card severity-style">
+        <div class="finding-header" style="padding: 18px 24px;">
+          <div class="finding-left">
+            <span class="nev-badge" style="color: #5B8FB9; background: #EEF6FF;">
+              <span style="width: 6px; height: 6px; border-radius: 50%; background: #98D0FF; display: inline-block;"></span>
+              Style
+            </span>
+            <span class="finding-title" style="color: #1a1a1a; font-size: 15px;">Settings 实例在每次请求中重复创建</span>
+          </div>
+          <div class="finding-right" style="gap: 10px;">
+            <span style="font-size: 12px; color: #aaa; font-weight: 500;">75%</span>
+            <button class="nev-arrow" style="width: 30px; height: 30px; font-size: 12px; background: #F7F2F2; color: #1a1a1a;">&#9660;</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function showTheme(id, btn) {
+  document.querySelectorAll('.theme-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.remove('active');
+    b.style.borderBottomColor = 'transparent';
+  });
+  document.getElementById('theme-' + id).classList.add('active');
+  btn.classList.add('active');
+  const colors = { indigo: '#5B5FC7', coral: '#E8573A', teal: '#0D9488', nev: '#6ED2B7' };
+  btn.style.borderBottomColor = colors[id];
+}
+</script>
+</body>
+</html>

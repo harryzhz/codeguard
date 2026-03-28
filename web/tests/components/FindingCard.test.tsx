@@ -11,7 +11,7 @@ const baseFinding: Finding = {
   description: "Unsanitized input in query",
   severity: "critical",
   status: "open",
-  confidence: 92,
+  confidence: 0.92,
   category: "security",
   suggestion: "Use parameterized queries",
   evidence_chain: [
@@ -28,7 +28,7 @@ describe("FindingCard", () => {
   it("renders collapsed by default with title and confidence", () => {
     render(<FindingCard finding={baseFinding} />);
     expect(screen.getByText("SQL Injection")).toBeInTheDocument();
-    expect(screen.getByTestId("confidence")).toHaveTextContent("92% confidence");
+    expect(screen.getByTestId("confidence")).toHaveTextContent("92%");
     expect(screen.queryByTestId("finding-body")).not.toBeInTheDocument();
   });
 
@@ -89,9 +89,9 @@ describe("FindingCard", () => {
     expect(screen.queryByTestId("dismiss-btn")).not.toBeInTheDocument();
   });
 
-  it("has correct left border color for critical severity", () => {
+  it("has correct border radius for card", () => {
     render(<FindingCard finding={baseFinding} />);
     const card = screen.getByTestId("finding-card");
-    expect(card.style.borderLeft).toContain("rgb(209, 69, 59)");
+    expect(card.style.borderRadius).toBe("28px");
   });
 });

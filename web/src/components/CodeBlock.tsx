@@ -4,7 +4,6 @@ import { createHighlighter, type Highlighter } from "shiki";
 interface CodeBlockProps {
   code: string;
   file?: string;
-  line?: number;
   observation?: string;
 }
 
@@ -31,81 +30,63 @@ function detectLang(file?: string): string {
   return map[ext ?? ""] ?? "text";
 }
 
-export function CodeBlock({ code, file, line, observation }: CodeBlockProps) {
+export function CodeBlock({ code, file, observation }: CodeBlockProps) {
   const [html, setHtml] = useState<string>("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const lang = detectLang(file);
     if (lang === "text") {
       setHtml("");
+      setLoading(false);
       return;
     }
+    setLoading(true);
     let cancelled = false;
     getHighlighter().then((h) => {
       if (cancelled) return;
       setHtml(h.codeToHtml(code, { lang, theme: "github-light" }));
+      setLoading(false);
     });
     return () => { cancelled = true; };
   }, [code, file]);
 
   return (
-    <div style={{ borderRadius: "8px", overflow: "hidden", border: "1px solid #E5E1DB", marginTop: "6px" }}>
-      {file && (
-        <div style={{
-          backgroundColor: "#1E1E2E",
-          color: "#CDD6F4",
-          padding: "6px 12px",
-          fontSize: "12px",
-          fontFamily: "monospace",
-        }}>
-          {file}{line != null && `:${line}`}
-        </div>
+    <div style={{ borderRadius: "14px", overflow: "hidden", marginTop: "6px" }}>
+      {html ? (
+        <div
+          className="shiki-wrapper"
+          data-testid="highlighted-code"
+          dangerouslySetInnerHTML={{ __html: html }}
+          style={{ fontSize: "12.5px", overflow: "auto" }}
+        />
+      ) : (
+        <pre
+          data-testid="code-block"
+          style={{
+            backgroundColor: "#F7F2F2",
+            color: "#1A1A1A",
+            padding: "10px 14px",
+            fontFamily: "monospace",
+            fontSize: "12.5px",
+            margin: 0,
+            overflowX: "auto",
+            whiteSpace: "pre-wrap",
+            lineHeight: 1.5,
+          }}
+        >
+          {code}
+        </pre>
       )}
-      <div style={{ position: "relative" }}>
-        {html ? (
-          <div
-            data-testid="highlighted-code"
-            dangerouslySetInnerHTML={{ __html: html }}
-            style={{ fontSize: "12px", overflow: "auto" }}
-          />
-        ) : (
-          <pre
-            data-testid="code-block"
-            style={{
-              backgroundColor: "#FAFAF8",
-              padding: "8px 12px",
-              fontFamily: "monospace",
-              fontSize: "12px",
-              margin: 0,
-              overflowX: "auto",
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            {code}
-          </pre>
-        )}
-        {line != null && (
-          <div style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            height: "100%",
-            pointerEvents: "none",
-            background: "rgba(209,69,59,0.06)",
-            borderLeft: "3px solid #D1453B",
-          }} />
-        )}
-      </div>
       {observation && (
         <div style={{
           backgroundColor: "#FEF9E7",
           borderTop: "1px solid #F0E6B8",
           padding: "8px 12px",
-          fontSize: "12px",
+          fontSize: "13px",
           color: "#5D4E0B",
         }}>
-          💬 {observation}
+          {observation}
         </div>
       )}
     </div>

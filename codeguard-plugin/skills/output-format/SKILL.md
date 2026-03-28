@@ -16,6 +16,7 @@ This skill defines the exact JSON schema that the ReviewAgent must produce as it
 {
   "version": "1.0",
   "project": "<string>",
+  "title": "<string>",
   "review_id": "<uuid>",
   "timestamp": "<ISO8601>",
   "summary": {
@@ -67,6 +68,7 @@ This skill defines the exact JSON schema that the ReviewAgent must produce as it
 |--------------|--------|----------|--------------------------------------------------------------------------|
 | `version`    | string | Yes      | Schema version. Always `"1.0"` for this version.                        |
 | `project`    | string | Yes      | Project name derived from the git remote or directory name.              |
+| `title`      | string | Yes      | A concise 1-2 sentence human-readable summary of the review findings.   |
 | `review_id`  | string | Yes      | A UUID v4 uniquely identifying this review.                              |
 | `timestamp`  | string | Yes      | ISO 8601 timestamp of when the review was produced (e.g., `2025-01-15T14:30:00Z`). |
 | `summary`    | object | Yes      | Aggregated counts of the review results.                                 |

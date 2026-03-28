@@ -1,21 +1,28 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap");
 
 :root {
-  --bg: #f5f3ef;
-  --primary: #2d7a6f;
-  --primary-light: #ebf5f3;
+  --bg: #F7F2F2;
+  --primary: #6ED2B7;
+  --primary-dark: #0D9488;
+  --primary-light: #E6FAF5;
   --text: #1a1a1a;
-  --text-secondary: #7a7570;
-  --border: #e5e1db;
+  --text-secondary: #999;
+  --border: transparent;
   --card-bg: #ffffff;
-  --critical: #d1453b;
-  --critical-bg: #fdeceb;
-  --warning: #c68b00;
-  --warning-bg: #fff5dc;
-  --style: #7a7570;
-  --style-bg: #f0eeeb;
-  --connector: #d6e5e2;
-  --code-bg: #f5f3ef;
+  --critical: #D44A3A;
+  --critical-dot: #FA8072;
+  --critical-bg: #FFF0EE;
+  --warning: #B8860B;
+  --warning-dot: #F5C563;
+  --warning-bg: #FFF8E7;
+  --style: #5B8FB9;
+  --style-dot: #98D0FF;
+  --style-bg: #EEF6FF;
+  --connector: #F0EEEB;
+  --code-bg: #F7F2F2;
+  --radius-card: 28px;
+  --radius-pill: 20px;
+  --radius-code: 14px;
   --font-family: "DM Sans", sans-serif;
 }
 
@@ -37,4 +44,30 @@ body {
 
 #root {
   min-height: 100vh;
+}
+
+/* Shiki code block styles */
+.shiki-wrapper pre.shiki {
+  padding: 10px 14px;
+  margin: 0;
+  overflow-x: auto;
+  line-height: 1.6;
+  background-color: var(--code-bg) !important;
+  border-radius: var(--radius-code);
+}
+
+.shiki-wrapper pre.shiki code {
+  counter-reset: line;
+}
+
+.shiki-wrapper pre.shiki code .line::before {
+  counter-increment: line;
+  content: counter(line);
+  display: inline-block;
+  width: 3ch;
+  margin-right: 1em;
+  text-align: right;
+  color: rgba(0, 0, 0, 0.2);
+  user-select: none;
+  font-size: 12px;
 }

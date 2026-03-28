@@ -46,18 +46,10 @@ docker compose up -d
 
 This starts:
 - PostgreSQL database (port 5432)
-- CodeGuard Server API (port 8000)
+- CodeGuard Server API (port 9527)
 - CodeGuard Web UI (port 80)
 
-### 3. Create a project
-
-```bash
-curl -X POST http://localhost:8000/api/v1/projects \
-  -H "Content-Type: application/json" \
-  -d '{"name": "my-project"}'
-```
-
-### 4. Install the plugin
+### 3. Install the plugin
 
 ```bash
 cd /path/to/your/project
@@ -67,11 +59,11 @@ claude --plugin-dir /path/to/codeguard/codeguard-plugin
 Set environment variables before starting Claude Code:
 
 ```bash
-export CODEGUARD_SERVER=http://localhost:8000
+export CODEGUARD_SERVER=http://localhost:9527
 export CODEGUARD_API_KEY=<same key as in .env>
 ```
 
-### 5. Run a review
+### 4. Run a review
 
 In Claude Code, run:
 
@@ -81,7 +73,9 @@ In Claude Code, run:
 
 This reviews all uncommitted changes and uploads the report to the server.
 
-### 6. View results
+Projects are created automatically on first review upload — no manual setup needed.
+
+### 5. View results
 
 Open http://localhost in your browser to see the web dashboard.
 
@@ -89,12 +83,24 @@ Navigate: Projects → your project → Reviews → click a review to see findin
 
 ## Local Development (without Docker)
 
+Using the Makefile:
+
+```bash
+make dev          # Start server (port 9527) + web (port 3014) in background
+make stop         # Stop all
+make test         # Run all tests (server + web)
+make test-server  # pytest only
+make test-web     # vitest only
+```
+
+Or manually:
+
 ### Server
 
 ```bash
 cd server
 pip install -e ".[dev]"
-DATABASE_URL="sqlite+aiosqlite:///codeguard.db" uvicorn app.main:create_app --factory --reload --port 8000
+DATABASE_URL="sqlite+aiosqlite:///codeguard.db" uvicorn app.main:create_app --factory --reload --port 9527
 ```
 
 ### Web UI
@@ -102,7 +108,7 @@ DATABASE_URL="sqlite+aiosqlite:///codeguard.db" uvicorn app.main:create_app --fa
 ```bash
 cd web
 npm install
-npm run dev  # starts on port 5173 with API proxy to localhost:8000
+npm run dev  # starts on port 5173 with API proxy to localhost:9527
 ```
 
 ## API Reference
@@ -112,9 +118,9 @@ npm run dev  # starts on port 5173 with API proxy to localhost:8000
 | POST | `/api/v1/projects` | Create project |
 | GET | `/api/v1/projects` | List projects |
 | GET | `/api/v1/projects/{name}` | Get project by name |
-| POST | `/api/v1/projects/{name}/reviews` | Upload review (requires API key) |
+| POST | `/api/v1/projects/{name}/reviews` | Upload review (requires API key; auto-creates project) |
 | GET | `/api/v1/projects/{name}/reviews` | List reviews |
-| GET | `/api/v1/projects/{name}/reviews/{id}` | Get review with findings |
+| GET | `/api/v1/projects/{name}/reviews/{version}` | Get review with findings |
 | PATCH | `/api/v1/findings/{id}` | Update finding status (accepted/dismissed) |
 
 ## Tech Stack

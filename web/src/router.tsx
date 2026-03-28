@@ -17,7 +17,7 @@ export const router = createBrowserRouter([
     element: <ReviewList />,
   },
   {
-    path: "/projects/:projectName/reviews/:reviewId",
+    path: "/projects/:projectName/reviews/:version",
     element: <ReviewDetail />,
   },
 ]);

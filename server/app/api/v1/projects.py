@@ -14,8 +14,8 @@ async def create_project(
     data: ProjectCreate,
     repo: ReviewRepository = Depends(get_repository),
 ):
-    existing = await repo.list_projects()
-    if any(p.name == data.name for p in existing):
+    existing = await repo.get_project_by_name(data.name)
+    if existing:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Project '{data.name}' already exists",

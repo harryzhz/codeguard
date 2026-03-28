@@ -8,7 +8,7 @@ const summary = {
   critical: 2,
   warning: 5,
   style: 3,
-  tests_run: 8,
+  tests_run: true,
   tests_passed: 7,
   tests_failed: 1,
 };

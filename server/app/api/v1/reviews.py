@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.api.deps import get_repository, verify_api_key, resolve_project
+from app.api.deps import get_repository, verify_api_key, resolve_project, resolve_or_create_project
 from app.models import (
     ProjectResponse,
     ReviewCreate,
@@ -19,7 +19,7 @@ async def create_review(
     project_name: str,
     data: ReviewCreate,
     _auth=Depends(verify_api_key),
-    project: ProjectResponse = Depends(resolve_project),
+    project: ProjectResponse = Depends(resolve_or_create_project),
     repo: ReviewRepository = Depends(get_repository),
 ):
     return await repo.create_review(project.id, data)
@@ -33,12 +33,13 @@ async def list_reviews(
     return await repo.list_reviews(project.id)
 
 
-@router.get("/projects/{project_name}/reviews/{review_id}", response_model=ReviewDetailResponse)
+@router.get("/projects/{project_name}/reviews/{version}", response_model=ReviewDetailResponse)
 async def get_review(
-    review_id: str,
+    version: int,
+    project: ProjectResponse = Depends(resolve_project),
     repo: ReviewRepository = Depends(get_repository),
 ):
-    review = await repo.get_review(review_id)
+    review = await repo.get_review_by_version(project.id, version)
     if review is None:
         raise HTTPException(status_code=404, detail="Review not found")
     return review

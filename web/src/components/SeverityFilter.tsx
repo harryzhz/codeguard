@@ -16,7 +16,17 @@ const options: { label: string; value: FilterValue }[] = [
 
 export function SeverityFilter({ value, onChange }: SeverityFilterProps) {
   return (
-    <div data-testid="severity-filter" style={{ display: "flex", gap: "4px" }}>
+    <div
+      data-testid="severity-filter"
+      style={{
+        display: "inline-flex",
+        gap: "4px",
+        background: "#fff",
+        borderRadius: "20px",
+        padding: "4px",
+        boxShadow: "inset 0 0 0 1.5px rgba(0,0,0,0.06)",
+      }}
+    >
       {options.map((opt) => {
         const active = value === opt.value;
         return (
@@ -25,15 +35,16 @@ export function SeverityFilter({ value, onChange }: SeverityFilterProps) {
             data-testid={`filter-${opt.value}`}
             onClick={() => onChange(opt.value)}
             style={{
-              padding: "6px 14px",
-              borderRadius: "6px",
-              border: active ? "none" : "1px solid #E5E1DB",
-              backgroundColor: active ? "#2D7A6F" : "transparent",
-              color: active ? "#FFFFFF" : "#7A7570",
+              padding: "8px 18px",
+              borderRadius: "16px",
+              border: "none",
+              backgroundColor: active ? "#1a1a1a" : "transparent",
+              color: active ? "#fff" : "#666",
               fontSize: "13px",
               fontWeight: 500,
               cursor: "pointer",
               fontFamily: "inherit",
+              transition: "all 0.3s ease",
             }}
           >
             {opt.label}

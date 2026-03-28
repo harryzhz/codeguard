@@ -17,13 +17,14 @@ const mockReview = {
   id: "r1",
   project_id: "p1",
   version: 1,
+  title: "发现 SQL 注入和空值检查问题",
   summary: {
     files_reviewed: 3,
     total_findings: 2,
     critical: 1,
     warning: 1,
     style: 0,
-    tests_run: 5,
+    tests_run: true,
     tests_passed: 4,
     tests_failed: 1,
   },
@@ -36,7 +37,7 @@ const mockReview = {
       description: "Bad query",
       severity: "critical" as const,
       status: "open" as const,
-      confidence: 90,
+      confidence: 0.90,
       category: "security" as const,
       evidence_chain: [],
       test_verification: null,
@@ -50,7 +51,7 @@ const mockReview = {
       description: "Could be null",
       severity: "warning" as const,
       status: "open" as const,
-      confidence: 75,
+      confidence: 0.75,
       category: "logic" as const,
       evidence_chain: [],
       test_verification: null,
@@ -69,7 +70,7 @@ function renderWithRouter() {
   return render(
     <MemoryRouter initialEntries={["/projects/my-project/reviews/r1"]}>
       <Routes>
-        <Route path="/projects/:projectName/reviews/:reviewId" element={<ReviewDetail />} />
+        <Route path="/projects/:projectName/reviews/:version" element={<ReviewDetail />} />
       </Routes>
     </MemoryRouter>,
   );

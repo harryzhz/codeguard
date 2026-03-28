@@ -37,13 +37,14 @@ describe("ReviewList", () => {
         id: "r1",
         project_id: "p1",
         version: 1,
+        title: "审查 2 个文件，发现 1 个 critical 问题",
         summary: {
           files_reviewed: 5,
           total_findings: 3,
           critical: 1,
           warning: 1,
           style: 1,
-          tests_run: 10,
+          tests_run: true,
           tests_passed: 9,
           tests_failed: 1,
         },
@@ -53,7 +54,7 @@ describe("ReviewList", () => {
     ]);
     renderWithRouter();
     await waitFor(() => {
-      expect(screen.getByText("1")).toBeInTheDocument();
+      expect(screen.getByText("审查 2 个文件，发现 1 个 critical 问题")).toBeInTheDocument();
     });
     expect(screen.getByTestId("review-card")).toBeInTheDocument();
     expect(screen.getByText("3 findings")).toBeInTheDocument();

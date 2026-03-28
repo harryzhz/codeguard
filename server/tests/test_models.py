@@ -116,7 +116,6 @@ def test_finding_response():
 
 def test_review_create_valid():
     r = ReviewCreate(
-        version="1.0",
         summary={"total": 1},
         files_changed=["x.py"],
         findings=[
@@ -136,7 +135,6 @@ def test_review_create_valid():
 
 def test_review_create_defaults():
     r = ReviewCreate()
-    assert r.version == "1.0"
     assert r.summary == {}
     assert r.files_changed == []
     assert r.findings == []
@@ -149,12 +147,13 @@ def test_review_response():
     rr = ReviewResponse(
         id="rev-123",
         project_id="proj-456",
-        version="1.0",
+        version=1,
+        title="Test review",
         summary={},
         files_changed=[],
         created_at=now,
     )
-    assert rr.version == "1.0"
+    assert rr.version == 1
 
 
 # ── ReviewDetailResponse ──
@@ -164,7 +163,8 @@ def test_review_detail_response():
     rd = ReviewDetailResponse(
         id="rev-123",
         project_id="proj-456",
-        version="1.0",
+        version=1,
+        title="Test review",
         summary={},
         files_changed=[],
         findings=[],

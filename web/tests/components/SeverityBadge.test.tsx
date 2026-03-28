@@ -7,28 +7,28 @@ describe("SeverityBadge", () => {
     render(<SeverityBadge severity="critical" />);
     const badge = screen.getByTestId("severity-badge");
     expect(badge).toHaveTextContent("critical");
-    expect(badge.style.color).toBe("rgb(209, 69, 59)");
-    expect(badge.style.backgroundColor).toBe("rgb(253, 236, 235)");
+    expect(badge.style.color).toBe("rgb(212, 74, 58)");
+    expect(badge.style.backgroundColor).toBe("rgb(255, 240, 238)");
   });
 
   it("renders warning badge", () => {
     render(<SeverityBadge severity="warning" />);
     const badge = screen.getByTestId("severity-badge");
     expect(badge).toHaveTextContent("warning");
-    expect(badge.style.color).toBe("rgb(198, 139, 0)");
+    expect(badge.style.color).toBe("rgb(184, 134, 11)");
   });
 
   it("renders style badge", () => {
     render(<SeverityBadge severity="style" />);
     const badge = screen.getByTestId("severity-badge");
     expect(badge).toHaveTextContent("style");
-    expect(badge.style.color).toBe("rgb(122, 117, 112)");
+    expect(badge.style.color).toBe("rgb(91, 143, 185)");
   });
 
   it("has correct border radius and font size", () => {
     render(<SeverityBadge severity="critical" />);
     const badge = screen.getByTestId("severity-badge");
-    expect(badge.style.borderRadius).toBe("6px");
+    expect(badge.style.borderRadius).toBe("20px");
     expect(badge.style.fontSize).toBe("11px");
   });
 });

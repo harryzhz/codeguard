@@ -14,7 +14,6 @@ async def finding_id(client: AsyncClient):
     resp = await client.post(
         "/api/v1/projects/fp/reviews",
         json={
-            "version": "1.0",
             "findings": [
                 {
                     "severity": "warning",
@@ -36,15 +35,25 @@ async def test_update_finding_status(client: AsyncClient, finding_id: str):
     resp = await client.patch(
         f"/api/v1/findings/{finding_id}",
         json={"status": "accepted"},
+        headers={"Authorization": "Bearer test-api-key"},
     )
     assert resp.status_code == 200
     assert resp.json()["status"] == "accepted"
+
+
+async def test_update_finding_unauthorized(client: AsyncClient, finding_id: str):
+    resp = await client.patch(
+        f"/api/v1/findings/{finding_id}",
+        json={"status": "accepted"},
+    )
+    assert resp.status_code == 401
 
 
 async def test_update_finding_not_found(client: AsyncClient):
     resp = await client.patch(
         "/api/v1/findings/nonexistent",
         json={"status": "dismissed"},
+        headers={"Authorization": "Bearer test-api-key"},
     )
     assert resp.status_code == 404
 
@@ -53,5 +62,6 @@ async def test_update_finding_invalid_status(client: AsyncClient, finding_id: st
     resp = await client.patch(
         f"/api/v1/findings/{finding_id}",
         json={"status": "invalid_status"},
+        headers={"Authorization": "Bearer test-api-key"},
     )
     assert resp.status_code == 422

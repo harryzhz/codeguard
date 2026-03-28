@@ -19,27 +19,28 @@ export function EvidenceChain({ steps }: EvidenceChainProps) {
                 width: "28px",
                 height: "28px",
                 minWidth: "28px",
-                borderRadius: "6px",
-                backgroundColor: "#EBF5F3",
+                borderRadius: "50%",
+                backgroundColor: "#FFF0EE",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontSize: "12px",
-                fontWeight: 600,
-                color: "#2D7A6F",
+                fontWeight: 700,
+                color: "#FA8072",
+                transition: "transform 0.3s ease",
               }}
             >
               {step.step}
             </div>
             <div style={{ flex: 1 }}>
-              <p style={{ margin: 0, fontSize: "14px", color: "#1A1A1A" }}>
+              <p style={{ margin: 0, fontSize: "13px", color: "#1a1a1a", fontWeight: 500, marginBottom: "4px" }}>
                 {step.observation}
               </p>
               {step.file && (
                 <span
                   data-testid="file-ref"
                   style={{
-                    color: "#2D7A6F",
+                    color: "#aaa",
                     fontSize: "12px",
                     fontWeight: 500,
                   }}
@@ -52,7 +53,6 @@ export function EvidenceChain({ steps }: EvidenceChainProps) {
                 <CodeBlock
                   code={step.snippet}
                   file={step.file}
-                  line={step.line}
                 />
               )}
             </div>
@@ -64,7 +64,8 @@ export function EvidenceChain({ steps }: EvidenceChainProps) {
                 width: "2px",
                 height: "16px",
                 marginLeft: "13px",
-                borderLeft: "2px dashed #D6E5E2",
+                background: "linear-gradient(to bottom, #FDD, #F7F2F2)",
+                borderRadius: "2px",
               }}
             />
           )}

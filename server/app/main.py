@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
@@ -10,8 +11,15 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from app.api.deps import set_repository
 from app.api.v1.router import api_router
 from app.config import Settings
+from app.middleware import RequestLoggingMiddleware
 from app.storage.postgres import PostgresReviewRepository
 from app.tables import Base
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)-5s %(name)s | %(message)s",
+    datefmt="%H:%M:%S",
+)
 
 
 @asynccontextmanager
@@ -41,6 +49,8 @@ def create_app(use_lifespan: bool = True) -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    app.add_middleware(RequestLoggingMiddleware)
 
     app.include_router(api_router)
     return app

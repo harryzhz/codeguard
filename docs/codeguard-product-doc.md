@@ -51,7 +51,7 @@ The ReviewAgent doesn't just look at the diff. It inherits the main agent's full
 When the review is done, you see a one-line summary in your terminal:
 
 ```
-[CodeGuard] Review complete. 2 critical, 1 warning → http://localhost:3000/review/a1b2c3
+[CodeGuard] Review complete. 2 critical, 1 warning → http://localhost:3014/review/a1b2c3
 ```
 
 Click the link. Your browser opens a clean visual report where you can browse findings, trace evidence chains, see test results, and accept or dismiss each item.
@@ -347,7 +347,7 @@ docker compose up -d
 Set the environment variables that the plugin's upload hook needs:
 
 ```bash
-export CODEGUARD_SERVER="http://localhost:8000"
+export CODEGUARD_SERVER="http://localhost:9527"
 export CODEGUARD_API_KEY="your-project-api-key"
 ```
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 from datetime import datetime, timezone
-from sqlalchemy import Float, ForeignKey, String, Text
+from sqlalchemy import Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.types import JSON
 
@@ -19,9 +19,11 @@ class ProjectRow(Base):
 
 class ReviewRow(Base):
     __tablename__ = "reviews"
+    __table_args__ = (UniqueConstraint("project_id", "version"),)
     id: Mapped[str] = mapped_column(String(12), primary_key=True, default=generate_short_id)
     project_id: Mapped[str] = mapped_column(ForeignKey("projects.id"), nullable=False)
-    version: Mapped[str] = mapped_column(String(50), nullable=False, default="1.0")
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    title: Mapped[str] = mapped_column(String(500), nullable=False, default="")
     summary: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
     files_changed: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc))

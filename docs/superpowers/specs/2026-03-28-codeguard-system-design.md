@@ -309,7 +309,7 @@ services:
 
   server:
     build: ./server
-    ports: ["8000:8000"]
+    ports: ["9527:9527"]
     depends_on:
       db:
         condition: service_healthy
@@ -319,9 +319,9 @@ services:
 
   web:
     build: ./web
-    ports: ["3000:80"]
+    ports: ["3014:80"]
     depends_on: [server]
-    # nginx 反代 /api/* → server:8000
+    # nginx 反代 /api/* → server:9527
 
 volumes:
   pgdata:
@@ -372,6 +372,6 @@ DATABASE_URL=sqlite+aiosqlite:///data/codeguard.db
 1. **Plugin**：在 Claude Code 中安装插件，执行一次编码任务，验证 ReviewAgent 自动触发并产出 JSON
 2. **手动触发**：执行 `/codeguard:review`，验证对当前 git diff 的审查
 3. **Server**：`curl POST /api/v1/projects/{id}/reviews` 上传 mock JSON，验证存储和查询
-4. **Web**：浏览器访问 `http://localhost:3000/projects`，验证三个页面渲染和交互
+4. **Web**：浏览器访问 `http://localhost:3014/projects`，验证三个页面渲染和交互
 5. **端到端**：Plugin 完成审查 → 自动上传 → Web 查看完整 report
 6. **Docker**：`docker compose up -d` 一键启动，验证两个容器正常运行

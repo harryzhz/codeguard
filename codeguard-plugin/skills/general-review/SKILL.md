@@ -190,9 +190,47 @@ Identify names that reduce code readability or are misleading.
 
 ---
 
+---
+
+## 6. Cross-Layer Data Flow
+
+Identify incorrect assumptions about data formats, value ranges, or types as data crosses system boundaries (backend → API → frontend, service A → service B, database → application).
+
+### Checks
+
+#### 6.1 Value Format Assumptions
+
+- Before flagging a data transformation as incorrect, **read the actual data source** to verify the value's format and range.
+- Common **correct** patterns that must not be flagged as bugs:
+  - Frontend multiplies a 0.0-1.0 float by 100 for percentage display — correct if the backend stores a normalized float.
+  - Frontend divides a value by 1000 — correct if the backend stores milliseconds and the frontend displays seconds.
+  - String formatting or rounding differences between API response and display.
+
+**Evidence chain requirement**: Include at least one evidence step from the **data producer** (e.g., model field definition, database column type, API serialization) and one from the **data consumer** (e.g., frontend display code). Show the actual value range at the source. A finding based on only the consumer side is insufficient.
+
+#### 6.2 API Contract Mismatches
+
+- Verify that frontend type definitions match the actual API response shape.
+- Check for fields that are optional on the backend but treated as required on the frontend, or vice versa.
+- Look for enum/string literal values that differ between backend and frontend constants.
+
+**Evidence chain requirement**: Show the backend response model, the API serialization, and the frontend type definition side by side.
+
+#### 6.3 Unit and Encoding Mismatches
+
+- Timestamps: epoch seconds vs milliseconds vs ISO 8601 strings.
+- Currency: cents vs dollars.
+- Percentages: 0.0-1.0 vs 0-100.
+- Sizes: bytes vs kilobytes vs megabytes.
+
+**Evidence chain requirement**: Show the unit at the source, the unit expected by the consumer, and whether a conversion is present and correct.
+
+---
+
 ## General Guidelines
 
 - **Prefer precision over volume.** Do not flag a potential issue unless you can construct a clear evidence chain.
 - **Be language-aware.** Adjust checks to the idioms of the language being reviewed. For example, Go error handling is different from Python exception handling.
 - **Consider the project context.** A prototype script has different standards than a production service.
 - **Check changed code first, then check how it integrates** with existing code. Issues at integration boundaries are often the most important.
+- **When reviewing data transformations, always verify the source.** The most common false positives come from assuming a value's format in one layer without checking the actual definition in another layer. Cross-layer assumptions are the #1 source of false positives.

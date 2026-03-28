@@ -3,10 +3,31 @@ import type { Finding } from "../api/client";
 import { SeverityBadge } from "./SeverityBadge";
 import { EvidenceChain } from "./EvidenceChain";
 
-const borderColorMap = {
-  critical: "#D1453B",
-  warning: "#C68B00",
-  style: "#C8C3BB",
+function renderSuggestionText(text: string): React.ReactNode[] {
+  const parts = text.split(/(`[^`]+`)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith("`") && part.endsWith("`")) {
+      return (
+        <code key={i} style={{
+          backgroundColor: "#E6FAF5",
+          color: "#0D9488",
+          padding: "2px 8px",
+          borderRadius: "8px",
+          fontSize: "12px",
+          fontFamily: "monospace",
+        }}>
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+    return <span key={i}>{part}</span>;
+  });
+}
+
+const hoverColorMap = {
+  critical: "#FA8072",
+  warning: "#F5C563",
+  style: "#98D0FF",
 } as const;
 
 interface FindingCardProps {
@@ -17,23 +38,30 @@ interface FindingCardProps {
 
 export function FindingCard({ finding, onAccept, onDismiss }: FindingCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const [hovered, setHovered] = useState(false);
 
   return (
     <div
       data-testid="finding-card"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
         backgroundColor: "#FFFFFF",
-        borderRadius: "12px",
-        border: "1px solid #E5E1DB",
-        borderLeft: `4px solid ${borderColorMap[finding.severity]}`,
+        borderRadius: "28px",
+        border: "none",
+        boxShadow: hovered
+          ? `inset 0 0 0 2px ${hoverColorMap[finding.severity]}`
+          : "inset 0 0 0 2px transparent",
         overflow: "hidden",
+        transition: "all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+        transform: hovered ? "translateY(-3px)" : "none",
       }}
     >
       <div
         data-testid="finding-header"
         onClick={() => setExpanded(!expanded)}
         style={{
-          padding: "16px 20px",
+          padding: "18px 24px",
           cursor: "pointer",
           display: "flex",
           alignItems: "center",
@@ -43,30 +71,77 @@ export function FindingCard({ finding, onAccept, onDismiss }: FindingCardProps) 
       >
         <div style={{ display: "flex", alignItems: "center", gap: "12px", flex: 1 }}>
           <SeverityBadge severity={finding.severity} />
-          <span style={{ fontSize: "14px", fontWeight: 600 }}>{finding.title}</span>
+          <span style={{ fontSize: "15px", fontWeight: 600 }}>{finding.title}</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {finding.status === "accepted" && (
+            <span
+              data-testid="status-badge"
+              style={{
+                fontSize: "11px",
+                fontWeight: 600,
+                color: "#0D9488",
+                backgroundColor: "#E6FAF5",
+                padding: "4px 12px",
+                borderRadius: "20px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+              }}
+            >
+              <span style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "#6ED2B7", display: "inline-block" }} />
+              Accepted
+            </span>
+          )}
+          {finding.status === "dismissed" && (
+            <span
+              data-testid="status-badge"
+              style={{
+                fontSize: "11px",
+                fontWeight: 600,
+                color: "#999",
+                backgroundColor: "#F0EEEB",
+                padding: "4px 12px",
+                borderRadius: "20px",
+              }}
+            >
+              Dismissed
+            </span>
+          )}
           <span
             data-testid="confidence"
-            style={{ fontSize: "12px", color: "#7A7570" }}
+            style={{ fontSize: "12px", color: "#aaa", fontWeight: 500 }}
           >
-            {finding.confidence}% confidence
+            {Math.round(finding.confidence * 100)}%
           </span>
-          <span style={{ fontSize: "12px", color: "#7A7570" }}>
+          <span
+            style={{
+              width: "30px",
+              height: "30px",
+              borderRadius: "50%",
+              backgroundColor: "#F7F2F2",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "12px",
+              color: "#1a1a1a",
+              transition: "all 0.3s ease",
+            }}
+          >
             {expanded ? "\u25B2" : "\u25BC"}
           </span>
         </div>
       </div>
 
       {expanded && (
-        <div data-testid="finding-body" style={{ padding: "0 20px 20px" }}>
-          <p style={{ fontSize: "14px", color: "#1A1A1A", marginBottom: "16px" }}>
+        <div data-testid="finding-body" style={{ padding: "0 24px 24px" }}>
+          <p style={{ fontSize: "14px", color: "#444", marginBottom: "20px", lineHeight: 1.7 }}>
             {finding.description}
           </p>
 
           {finding.evidence_chain.length > 0 && (
-            <div style={{ marginBottom: "16px" }}>
-              <h4 style={{ fontSize: "12px", color: "#7A7570", marginBottom: "8px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            <div style={{ marginBottom: "20px" }}>
+              <h4 style={{ fontSize: "11px", color: "#aaa", marginBottom: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px" }}>
                 Evidence Chain
               </h4>
               <EvidenceChain steps={finding.evidence_chain} />
@@ -74,58 +149,59 @@ export function FindingCard({ finding, onAccept, onDismiss }: FindingCardProps) 
           )}
 
           {finding.test_verification && (
-            <div data-testid="test-verification" style={{ marginBottom: "16px" }}>
-              <h4 style={{ fontSize: "12px", color: "#7A7570", marginBottom: "8px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            <div data-testid="test-verification" style={{ marginBottom: "20px" }}>
+              <h4 style={{ fontSize: "11px", color: "#aaa", marginBottom: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px" }}>
                 Test Verification
               </h4>
               <div style={{
-                padding: "10px 14px",
-                borderRadius: "8px",
-                backgroundColor: finding.test_verification.status === "passed" ? "#EBF5F3" : finding.test_verification.status === "failed" ? "#FDECEB" : "#F0EEEB",
+                padding: "12px 16px",
+                borderRadius: "16px",
+                backgroundColor: finding.test_verification.status === "passed" ? "#E6FAF5" : finding.test_verification.status === "failed" ? "#FFF0EE" : "#F7F2F2",
                 fontSize: "13px",
               }}>
                 <strong>{finding.test_verification.status.toUpperCase()}</strong>
                 {finding.test_verification.test_name && <>: {finding.test_verification.test_name}</>}
                 {finding.test_verification.output && (
-                  <p style={{ marginTop: "4px", fontSize: "12px", color: "#7A7570" }}>{finding.test_verification.output}</p>
+                  <p style={{ marginTop: "4px", fontSize: "12px", color: "#999" }}>{finding.test_verification.output}</p>
                 )}
               </div>
             </div>
           )}
 
           {finding.suggestion && (
-            <div data-testid="suggestion" style={{ marginBottom: "16px" }}>
-              <h4 style={{ fontSize: "12px", color: "#7A7570", marginBottom: "8px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            <div data-testid="suggestion" style={{ marginBottom: "20px" }}>
+              <h4 style={{ fontSize: "11px", color: "#aaa", marginBottom: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px" }}>
                 Suggestion
               </h4>
-              <pre style={{
-                backgroundColor: "#F5F3EF",
-                padding: "12px",
-                borderRadius: "8px",
-                fontFamily: "monospace",
-                fontSize: "12px",
-                whiteSpace: "pre-wrap",
+              <div style={{
+                backgroundColor: "#F7F2F2",
+                padding: "14px 18px",
+                borderRadius: "16px",
+                fontSize: "13px",
+                lineHeight: 1.7,
+                color: "#444",
               }}>
-                {finding.suggestion}
-              </pre>
+                {renderSuggestionText(finding.suggestion)}
+              </div>
             </div>
           )}
 
           {finding.status === "open" && (
-            <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
               <button
                 data-testid="dismiss-btn"
                 onClick={() => onDismiss?.(finding.id)}
                 style={{
-                  padding: "8px 20px",
-                  borderRadius: "8px",
-                  border: "1px solid #E5E1DB",
-                  backgroundColor: "#F0EEEB",
-                  color: "#1A1A1A",
+                  padding: "10px 24px",
+                  borderRadius: "20px",
+                  border: "none",
+                  backgroundColor: "#F7F2F2",
+                  color: "#666",
                   fontSize: "13px",
-                  fontWeight: 500,
+                  fontWeight: 600,
                   cursor: "pointer",
                   fontFamily: "inherit",
+                  transition: "all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
                 }}
               >
                 Dismiss
@@ -134,18 +210,19 @@ export function FindingCard({ finding, onAccept, onDismiss }: FindingCardProps) 
                 data-testid="accept-btn"
                 onClick={() => onAccept?.(finding.id)}
                 style={{
-                  padding: "8px 20px",
-                  borderRadius: "8px",
+                  padding: "10px 24px",
+                  borderRadius: "20px",
                   border: "none",
-                  backgroundColor: "#2D7A6F",
+                  backgroundColor: "#1a1a1a",
                   color: "#FFFFFF",
                   fontSize: "13px",
-                  fontWeight: 500,
+                  fontWeight: 600,
                   cursor: "pointer",
                   fontFamily: "inherit",
+                  transition: "all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
                 }}
               >
-                Accept
+                &#10003; Accept
               </button>
             </div>
           )}

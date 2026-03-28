@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from sqlalchemy import select
+from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.orm import selectinload
 
@@ -53,55 +54,71 @@ class PostgresReviewRepository(ReviewRepository):
     async def create_review(
         self, project_id: str, data: ReviewCreate
     ) -> ReviewDetailResponse:
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                async with self._sf() as session:
+                    # Auto-increment version per project
+                    stmt = select(func.coalesce(func.max(ReviewRow.version), 0)).where(
+                        ReviewRow.project_id == project_id
+                    )
+                    max_version = (await session.execute(stmt)).scalar_one()
+                    review = ReviewRow(
+                        project_id=project_id,
+                        version=max_version + 1,
+                        title=data.title,
+                        summary=data.summary,
+                        files_changed=data.files_changed,
+                    )
+                    session.add(review)
+                    await session.flush()
+
+                    for f in data.findings:
+                        finding = FindingRow(
+                            review_id=review.id,
+                            severity=f.severity,
+                            confidence=f.confidence,
+                            title=f.title,
+                            description=f.description,
+                            category=f.category,
+                            evidence_chain=f.evidence_chain,
+                            test_verification=f.test_verification,
+                            suggestion=f.suggestion,
+                        )
+                        session.add(finding)
+
+                    await session.commit()
+
+                    # reload with findings
+                    stmt = (
+                        select(ReviewRow)
+                        .options(selectinload(ReviewRow.findings))
+                        .where(ReviewRow.id == review.id)
+                    )
+                    review = (await session.execute(stmt)).scalar_one()
+                    return ReviewDetailResponse(
+                        id=review.id,
+                        project_id=review.project_id,
+                        version=review.version,
+                        title=review.title,
+                        summary=review.summary,
+                        files_changed=review.files_changed,
+                        findings=[FindingResponse.model_validate(f) for f in review.findings],
+                        created_at=review.created_at,
+                    )
+            except IntegrityError:
+                if attempt == max_retries - 1:
+                    raise
+                continue
+
+    async def get_review_by_version(
+        self, project_id: str, version: int
+    ) -> ReviewDetailResponse | None:
         async with self._sf() as session:
-            review = ReviewRow(
-                project_id=project_id,
-                version=data.version,
-                summary=data.summary,
-                files_changed=data.files_changed,
-            )
-            session.add(review)
-            await session.flush()
-
-            for f in data.findings:
-                finding = FindingRow(
-                    review_id=review.id,
-                    severity=f.severity,
-                    confidence=f.confidence,
-                    title=f.title,
-                    description=f.description,
-                    category=f.category,
-                    evidence_chain=f.evidence_chain,
-                    test_verification=f.test_verification,
-                    suggestion=f.suggestion,
-                )
-                session.add(finding)
-
-            await session.commit()
-
-            # reload with findings
             stmt = (
                 select(ReviewRow)
                 .options(selectinload(ReviewRow.findings))
-                .where(ReviewRow.id == review.id)
-            )
-            review = (await session.execute(stmt)).scalar_one()
-            return ReviewDetailResponse(
-                id=review.id,
-                project_id=review.project_id,
-                version=review.version,
-                summary=review.summary,
-                files_changed=review.files_changed,
-                findings=[FindingResponse.model_validate(f) for f in review.findings],
-                created_at=review.created_at,
-            )
-
-    async def get_review(self, review_id: str) -> ReviewDetailResponse | None:
-        async with self._sf() as session:
-            stmt = (
-                select(ReviewRow)
-                .options(selectinload(ReviewRow.findings))
-                .where(ReviewRow.id == review_id)
+                .where(ReviewRow.project_id == project_id, ReviewRow.version == version)
             )
             review = (await session.execute(stmt)).scalar_one_or_none()
             if not review:
@@ -110,6 +127,7 @@ class PostgresReviewRepository(ReviewRepository):
                 id=review.id,
                 project_id=review.project_id,
                 version=review.version,
+                title=review.title,
                 summary=review.summary,
                 files_changed=review.files_changed,
                 findings=[FindingResponse.model_validate(f) for f in review.findings],
@@ -129,6 +147,7 @@ class PostgresReviewRepository(ReviewRepository):
                     id=r.id,
                     project_id=r.project_id,
                     version=r.version,
+                    title=r.title,
                     summary=r.summary,
                     files_changed=r.files_changed,
                     created_at=r.created_at,

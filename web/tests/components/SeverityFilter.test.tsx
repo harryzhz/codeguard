@@ -15,7 +15,7 @@ describe("SeverityFilter", () => {
   it("highlights active button with teal background", () => {
     render(<SeverityFilter value="critical" onChange={() => {}} />);
     const active = screen.getByTestId("filter-critical");
-    expect(active.style.backgroundColor).toBe("rgb(45, 122, 111)");
+    expect(active.style.backgroundColor).toBe("rgb(26, 26, 26)");
     expect(active.style.color).toBe("rgb(255, 255, 255)");
   });
 

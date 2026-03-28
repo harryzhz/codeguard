@@ -25,15 +25,17 @@ services:
     environment:
       CODEGUARD_API_KEY: ${CODEGUARD_API_KEY}
     ports:
-      - "8000:8000"
+      - "9527:9527"
     depends_on:
       db:
         condition: service_healthy
 
   web:
-    image: nginx:alpine
+    build:
+      context: ./web
+      dockerfile: Dockerfile
     ports:
-      - "80:80"
+      - "3014:80"
     depends_on:
       - server
 
