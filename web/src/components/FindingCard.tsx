@@ -125,7 +125,6 @@ export function FindingCard({ finding, onAccept, onDismiss }: FindingCardProps) 
               justifyContent: "center",
               fontSize: "12px",
               color: "#1a1a1a",
-              transition: "all 0.3s ease",
             }}
           >
             {expanded ? "\u25B2" : "\u25BC"}
@@ -201,7 +200,6 @@ export function FindingCard({ finding, onAccept, onDismiss }: FindingCardProps) 
                   fontWeight: 600,
                   cursor: "pointer",
                   fontFamily: "inherit",
-                  transition: "all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
                 }}
               >
                 Dismiss
@@ -219,7 +217,6 @@ export function FindingCard({ finding, onAccept, onDismiss }: FindingCardProps) 
                   fontWeight: 600,
                   cursor: "pointer",
                   fontFamily: "inherit",
-                  transition: "all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
                 }}
               >
                 &#10003; Accept

@@ -143,7 +143,6 @@ export function ReviewDetail() {
                       fontFamily: "inherit",
                       opacity: acceptingAll ? 0.7 : 1,
                       whiteSpace: "nowrap",
-                      transition: "all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
                     }}
                   >
                     <span>&#10003;</span>
@@ -168,7 +167,6 @@ export function ReviewDetail() {
                       cursor: "pointer",
                       fontFamily: "inherit",
                       whiteSpace: "nowrap",
-                      transition: "all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
                     }}
                   >
                     <span>&#8599;</span>

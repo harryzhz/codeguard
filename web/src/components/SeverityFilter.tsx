@@ -44,7 +44,6 @@ export function SeverityFilter({ value, onChange }: SeverityFilterProps) {
               fontWeight: 500,
               cursor: "pointer",
               fontFamily: "inherit",
-              transition: "all 0.3s ease",
             }}
           >
             {opt.label}

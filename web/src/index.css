@@ -46,6 +46,18 @@ body {
   min-height: 100vh;
 }
 
+/* Nev Flynn style button hover glow */
+button {
+  box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px;
+  transition: box-shadow 0.2s ease-out, transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), background-color 0.2s ease-out, color 0.2s ease-out, opacity 0.2s ease-out;
+}
+button:hover {
+  box-shadow: rgba(0, 0, 0, 0.08) 0px 0px 0px 5px;
+}
+button:active {
+  transform: scale(0.97);
+}
+
 /* Shiki code block styles */
 .shiki-wrapper pre.shiki {
   padding: 10px 14px;
