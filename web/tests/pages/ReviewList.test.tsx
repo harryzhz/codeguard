@@ -36,7 +36,7 @@ describe("ReviewList", () => {
       {
         id: "r1",
         project_id: "p1",
-        version: "v1.0.0",
+        version: 1,
         summary: {
           files_reviewed: 5,
           total_findings: 3,
@@ -53,7 +53,7 @@ describe("ReviewList", () => {
     ]);
     renderWithRouter();
     await waitFor(() => {
-      expect(screen.getByText("v1.0.0")).toBeInTheDocument();
+      expect(screen.getByText("1")).toBeInTheDocument();
     });
     expect(screen.getByTestId("review-card")).toBeInTheDocument();
     expect(screen.getByText("3 findings")).toBeInTheDocument();

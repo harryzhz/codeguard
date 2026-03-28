@@ -16,7 +16,7 @@ const mockUpdateFindingStatus = vi.mocked(updateFindingStatus);
 const mockReview = {
   id: "r1",
   project_id: "p1",
-  version: "v1.0.0",
+  version: 1,
   summary: {
     files_reviewed: 3,
     total_findings: 2,

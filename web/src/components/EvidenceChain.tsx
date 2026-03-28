@@ -1,4 +1,5 @@
 import type { EvidenceStep } from "../api/client";
+import { CodeBlock } from "./CodeBlock";
 
 interface EvidenceChainProps {
   steps: EvidenceStep[];
@@ -48,21 +49,11 @@ export function EvidenceChain({ steps }: EvidenceChainProps) {
                 </span>
               )}
               {step.snippet && (
-                <pre
-                  data-testid="code-block"
-                  style={{
-                    backgroundColor: "#F5F3EF",
-                    padding: "8px 12px",
-                    borderRadius: "6px",
-                    fontFamily: "monospace",
-                    fontSize: "12px",
-                    marginTop: "6px",
-                    overflowX: "auto",
-                    whiteSpace: "pre-wrap",
-                  }}
-                >
-                  {step.snippet}
-                </pre>
+                <CodeBlock
+                  code={step.snippet}
+                  file={step.file}
+                  line={step.line}
+                />
               )}
             </div>
           </div>
