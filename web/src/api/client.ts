@@ -107,3 +107,21 @@ export function updateFindingStatus(
     },
   );
 }
+
+export async function deleteProject(projectName: string): Promise<void> {
+  const response = await fetch(`/api/v1/projects/${projectName}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) {
+    throw new ApiError(response.status, `Request failed: ${response.statusText}`);
+  }
+}
+
+export async function deleteReview(projectName: string, version: number): Promise<void> {
+  const response = await fetch(`/api/v1/projects/${projectName}/reviews/${version}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) {
+    throw new ApiError(response.status, `Request failed: ${response.statusText}`);
+  }
+}

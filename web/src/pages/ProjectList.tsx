@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { Project } from "../api/client";
-import { fetchProjects } from "../api/client";
+import { fetchProjects, deleteProject } from "../api/client";
+import { ConfirmDialog } from "../components/ConfirmDialog";
 import { NavBar } from "../components/NavBar";
 
 function relativeTime(dateStr: string): string {
@@ -19,6 +20,8 @@ export function ProjectList() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchProjects()
@@ -26,6 +29,20 @@ export function ProjectList() {
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await deleteProject(deleteTarget.name);
+      setProjects((prev) => prev.filter((p) => p.id !== deleteTarget.id));
+      setDeleteTarget(null);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Delete failed");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div>
@@ -66,13 +83,51 @@ export function ProjectList() {
                     {project.name}
                   </h2>
                 </div>
-                <span style={{ fontSize: "12px", color: "#999" }}>
-                  {project.created_at && relativeTime(project.created_at)}
-                </span>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <span style={{ fontSize: "12px", color: "#999" }}>
+                    {project.created_at && relativeTime(project.created_at)}
+                  </span>
+                  <button
+                    data-testid="delete-project"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setDeleteTarget(project);
+                    }}
+                    style={{
+                      padding: "4px 12px",
+                      borderRadius: "20px",
+                      border: "1px solid transparent",
+                      background: "transparent",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      color: "#999",
+                      cursor: "pointer",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = "#D44A3A";
+                      e.currentTarget.style.borderColor = "#D44A3A";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = "#999";
+                      e.currentTarget.style.borderColor = "transparent";
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             </Link>
           ))}
         </div>
+        <ConfirmDialog
+          open={deleteTarget !== null}
+          title="Delete Project"
+          message={`Are you sure you want to delete project "${deleteTarget?.name}"? All reviews under this project will also be deleted.`}
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteTarget(null)}
+          loading={deleting}
+        />
       </div>
     </div>
   );

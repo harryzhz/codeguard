@@ -15,8 +15,13 @@
     "auto_review_on_stop": true
   },
   "review": {
-    "max_files": 50,
+    "max_files": 200,
     "run_tests": true,
-    "severity_threshold": "style"
+    "severity_threshold": "style",
+    "default_base_branch": "main"
+  },
+  "server": {
+    "url": "http://localhost:9527",
+    "api_key": "CODE_GUARD"
   }
 }

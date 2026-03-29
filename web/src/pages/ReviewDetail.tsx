@@ -25,8 +25,12 @@ export function ReviewDetail() {
 
   const filteredFindings = useMemo(() => {
     if (!review) return [];
-    if (filter === "all") return review.findings;
-    return review.findings.filter((f) => f.severity === filter);
+    const severityOrder: Record<string, number> = { critical: 0, warning: 1, style: 2 };
+    const sorted = [...review.findings].sort(
+      (a, b) => (severityOrder[a.severity] ?? 3) - (severityOrder[b.severity] ?? 3),
+    );
+    if (filter === "all") return sorted;
+    return sorted.filter((f) => f.severity === filter);
   }, [review, filter]);
 
   const openFindings = useMemo(() => {

@@ -5,9 +5,8 @@
 # Reads the review JSON from .codeguard/last-review.json and uploads it
 # to the CodeGuard server. Called by the SubagentStop hook after ReviewAgent.
 #
-# Required environment variables:
-#   CODEGUARD_SERVER   - Base URL of the CodeGuard server
-#   CODEGUARD_API_KEY  - API key for authentication
+# Configuration is read from the plugin's settings.json (server.url and server.api_key).
+# Falls back to environment variables CODEGUARD_SERVER and CODEGUARD_API_KEY if set.
 #
 
 set -euo pipefail
@@ -19,34 +18,46 @@ if [ ! -f "$REVIEW_FILE" ]; then
     exit 0
 fi
 
-# --- Load env vars from .env if not already set ---
-ENV_FILE=".env"
-if [ -f "$ENV_FILE" ]; then
-    while IFS= read -r line || [ -n "$line" ]; do
-        # Skip comments and empty lines
-        [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
-        # Extract key (everything before first =)
-        key="${line%%=*}"
-        key="${key// /}"
-        # Extract value (everything after first =)
-        value="${line#*=}"
-        # Strip surrounding quotes
-        value="${value#\"}" ; value="${value%\"}"
-        value="${value#\'}" ; value="${value%\'}"
-        # Only set if not already in environment
-        if [ -z "${!key:-}" ]; then
-            export "$key=$value"
-        fi
-    done < "$ENV_FILE"
+# --- Resolve plugin root directory ---
+PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/../.." && pwd)}"
+SETTINGS_FILE="${PLUGIN_ROOT}/settings.json"
+
+# --- Read config from settings.json ---
+if [ -f "$SETTINGS_FILE" ]; then
+    SERVER_URL=$(python3 -c "
+import json, sys
+try:
+    with open('$SETTINGS_FILE') as f:
+        data = json.load(f)
+    server = data.get('server', {})
+    print(server.get('url', ''))
+except Exception:
+    print('')
+" 2>/dev/null) || SERVER_URL=""
+
+    API_KEY=$(python3 -c "
+import json, sys
+try:
+    with open('$SETTINGS_FILE') as f:
+        data = json.load(f)
+    server = data.get('server', {})
+    print(server.get('api_key', ''))
+except Exception:
+    print('')
+" 2>/dev/null) || API_KEY=""
 fi
 
-# --- Check required env vars ---
-if [ -z "${CODEGUARD_SERVER:-}" ]; then
-    echo "[CodeGuard] Warning: CODEGUARD_SERVER not set. Skipping upload." >&2
+# --- Fall back to environment variables ---
+CODEGUARD_SERVER="${SERVER_URL:-${CODEGUARD_SERVER:-}}"
+CODEGUARD_API_KEY="${API_KEY:-${CODEGUARD_API_KEY:-}}"
+
+# --- Check required config ---
+if [ -z "$CODEGUARD_SERVER" ]; then
+    echo "[CodeGuard] Warning: server.url not configured in settings.json. Skipping upload." >&2
     exit 0
 fi
-if [ -z "${CODEGUARD_API_KEY:-}" ]; then
-    echo "[CodeGuard] Warning: CODEGUARD_API_KEY not set. Skipping upload." >&2
+if [ -z "$CODEGUARD_API_KEY" ]; then
+    echo "[CodeGuard] Warning: server.api_key not configured in settings.json. Skipping upload." >&2
     exit 0
 fi
 

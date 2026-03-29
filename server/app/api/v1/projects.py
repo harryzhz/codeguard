@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
-from app.api.deps import get_repository, resolve_project
+from app.api.deps import get_repository, resolve_project, verify_api_key
 from app.models import ProjectCreate, ProjectResponse
 from app.storage.base import ReviewRepository
 
@@ -35,3 +35,13 @@ async def get_project(
     project: ProjectResponse = Depends(resolve_project),
 ):
     return project
+
+
+@router.delete("/{project_name}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_project(
+    _auth=Depends(verify_api_key),
+    project: ProjectResponse = Depends(resolve_project),
+    repo: ReviewRepository = Depends(get_repository),
+):
+    await repo.delete_project(project.id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

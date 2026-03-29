@@ -49,6 +49,15 @@ class PostgresReviewRepository(ReviewRepository):
             rows = (await session.execute(stmt)).scalars().all()
             return [ProjectResponse.model_validate(r) for r in rows]
 
+    async def delete_project(self, project_id: str) -> bool:
+        async with self._sf() as session:
+            row = await session.get(ProjectRow, project_id)
+            if not row:
+                return False
+            await session.delete(row)
+            await session.commit()
+            return True
+
     # ── Reviews ──
 
     async def create_review(
@@ -154,6 +163,15 @@ class PostgresReviewRepository(ReviewRepository):
                 )
                 for r in rows
             ]
+
+    async def delete_review(self, review_id: str) -> bool:
+        async with self._sf() as session:
+            row = await session.get(ReviewRow, review_id)
+            if not row:
+                return False
+            await session.delete(row)
+            await session.commit()
+            return True
 
     # ── Findings ──
 

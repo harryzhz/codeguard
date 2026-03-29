@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { Review } from "../api/client";
-import { fetchReviews } from "../api/client";
+import { fetchReviews, deleteReview } from "../api/client";
+import { ConfirmDialog } from "../components/ConfirmDialog";
 import { NavBar } from "../components/NavBar";
 import { SeverityBadge } from "../components/SeverityBadge";
 
@@ -10,6 +11,8 @@ export function ReviewList() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Review | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!projectName) return;
@@ -18,6 +21,20 @@ export function ReviewList() {
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   }, [projectName]);
+
+  const handleDelete = async () => {
+    if (!deleteTarget || !projectName) return;
+    setDeleting(true);
+    try {
+      await deleteReview(projectName, deleteTarget.version);
+      setReviews((prev) => prev.filter((r) => r.id !== deleteTarget.id));
+      setDeleteTarget(null);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Delete failed");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div>
@@ -75,11 +92,47 @@ export function ReviewList() {
                   <span style={{ fontSize: "12px", color: "#999" }}>
                     Tests: {review.summary.tests_run ? `${review.summary.tests_passed}/${review.summary.tests_passed + review.summary.tests_failed}` : "—"}
                   </span>
+                  <button
+                    data-testid="delete-review"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setDeleteTarget(review);
+                    }}
+                    style={{
+                      padding: "4px 12px",
+                      borderRadius: "20px",
+                      border: "1px solid transparent",
+                      background: "transparent",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      color: "#999",
+                      cursor: "pointer",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = "#D44A3A";
+                      e.currentTarget.style.borderColor = "#D44A3A";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = "#999";
+                      e.currentTarget.style.borderColor = "transparent";
+                    }}
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
             </Link>
           ))}
         </div>
+        <ConfirmDialog
+          open={deleteTarget !== null}
+          title="Delete Review"
+          message={`Are you sure you want to delete Review v${deleteTarget?.version}?`}
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteTarget(null)}
+          loading={deleting}
+        />
       </div>
     </div>
   );

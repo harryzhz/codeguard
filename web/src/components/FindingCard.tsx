@@ -71,6 +71,21 @@ export function FindingCard({ finding, onAccept, onDismiss }: FindingCardProps) 
       >
         <div style={{ display: "flex", alignItems: "center", gap: "12px", flex: 1 }}>
           <SeverityBadge severity={finding.severity} />
+          <span
+            data-testid="category-badge"
+            style={{
+              fontSize: "11px",
+              fontWeight: 600,
+              color: "#888",
+              backgroundColor: "#F0EEEB",
+              padding: "4px 12px",
+              borderRadius: "20px",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+            }}
+          >
+            {finding.category}
+          </span>
           <span style={{ fontSize: "15px", fontWeight: 600 }}>{finding.title}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>

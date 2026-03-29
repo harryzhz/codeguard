@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from app.api.deps import get_repository, verify_api_key, resolve_project, resolve_or_create_project
 from app.models import (
@@ -43,3 +43,17 @@ async def get_review(
     if review is None:
         raise HTTPException(status_code=404, detail="Review not found")
     return review
+
+
+@router.delete("/projects/{project_name}/reviews/{version}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_review(
+    version: int,
+    _auth=Depends(verify_api_key),
+    project: ProjectResponse = Depends(resolve_project),
+    repo: ReviewRepository = Depends(get_repository),
+):
+    review = await repo.get_review_by_version(project.id, version)
+    if review is None:
+        raise HTTPException(status_code=404, detail="Review not found")
+    await repo.delete_review(review.id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
