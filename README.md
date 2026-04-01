@@ -51,16 +51,13 @@ This starts:
 
 ### 3. Install the plugin
 
-**方式一：通过 Marketplace 安装（推荐）**
+**方式一：一键安装脚本（推荐）**
 
-在 Claude Code 中执行：
-
-```
-/plugin marketplace add harryzhz/codeguard
-/plugin install codeguard@codeguard
+```bash
+bash <(curl -s https://raw.githubusercontent.com/harryzhz/codeguard/main/scripts/install-plugin.sh)
 ```
 
-安装后插件会自动加载，无需每次手动指定路径。
+安装后重启 Claude Code 即可使用。
 
 **方式二：本地路径加载（开发调试用）**
 
