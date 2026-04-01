@@ -8,11 +8,7 @@
     {
       "name": "codeguard",
       "description": "Automatic code review agent that produces evidence-backed findings with structured JSON reports.",
-      "source": {
-        "source": "git-subdir",
-        "url": "harryzhz/codeguard",
-        "path": "codeguard-plugin"
-      }
+      "source": "./codeguard-plugin"
     }
   ]
 }
