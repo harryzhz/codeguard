@@ -51,12 +51,27 @@ This starts:
 
 ### 3. Install the plugin
 
+**方式一：通过 Marketplace 安装（推荐）**
+
+在 Claude Code 中执行：
+
+```
+/plugin marketplace add harryzhz/codeguard
+/plugin install codeguard@codeguard
+```
+
+安装后插件会自动加载，无需每次手动指定路径。
+
+**方式二：本地路径加载（开发调试用）**
+
 ```bash
 cd /path/to/your/project
 claude --plugin-dir /path/to/codeguard/codeguard-plugin
 ```
 
-Set environment variables before starting Claude Code:
+**配置服务器连接**
+
+设置环境变量，或编辑插件的 `settings.json`：
 
 ```bash
 export CODEGUARD_SERVER=http://localhost:9527
