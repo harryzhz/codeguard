@@ -2,14 +2,16 @@
 """
 validate-review.py
 
-Validates .codeguard/last-review.json against the CodeGuard review schema.
+Validates ~/.codeguard/<project>/last-review.json against the CodeGuard review schema.
 Prints "OK" on success, or a list of errors on failure (exit code 1).
 
 Usage: python3 validate-review.py [path/to/review.json]
-       Defaults to .codeguard/last-review.json if no argument given.
+       Defaults to ~/.codeguard/<project>/last-review.json if no argument given.
 """
 
 import json
+import os
+import subprocess
 import sys
 
 VALID_SEVERITIES = {"critical", "warning", "style"}
@@ -121,8 +123,28 @@ def validate_review(data):
     return errors
 
 
+def detect_project_name():
+    """Derive project name from git remote or directory basename."""
+    try:
+        url = subprocess.check_output(
+            ["git", "remote", "get-url", "origin"],
+            stderr=subprocess.DEVNULL,
+            text=True,
+        ).strip()
+        name = url.rstrip("/").rsplit("/", 1)[-1]
+        return name.removesuffix(".git")
+    except Exception:
+        return os.path.basename(os.getcwd())
+
+
+def default_review_path():
+    """Return the default review file path: ~/.codeguard/<project>/last-review.json."""
+    project = detect_project_name()
+    return os.path.expanduser(f"~/.codeguard/{project}/last-review.json")
+
+
 def main():
-    file_path = sys.argv[1] if len(sys.argv) > 1 else ".codeguard/last-review.json"
+    file_path = sys.argv[1] if len(sys.argv) > 1 else default_review_path()
 
     try:
         with open(file_path) as f:

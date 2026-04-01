@@ -2,11 +2,11 @@
 """
 fix-review.py
 
-Auto-fixes common structural issues in .codeguard/last-review.json to conform
-to the CodeGuard review schema. Overwrites the file in place.
+Auto-fixes common structural issues in ~/.codeguard/<project>/last-review.json
+to conform to the CodeGuard review schema. Overwrites the file in place.
 
 Usage: python3 fix-review.py [path/to/review.json]
-       Defaults to .codeguard/last-review.json if no argument given.
+       Defaults to ~/.codeguard/<project>/last-review.json if no argument given.
 """
 
 import json
@@ -243,8 +243,14 @@ def fix_review(data):
     return data, fixes
 
 
+def default_review_path():
+    """Return the default review file path: ~/.codeguard/<project>/last-review.json."""
+    project = detect_project_name()
+    return os.path.expanduser(f"~/.codeguard/{project}/last-review.json")
+
+
 def main():
-    file_path = sys.argv[1] if len(sys.argv) > 1 else ".codeguard/last-review.json"
+    file_path = sys.argv[1] if len(sys.argv) > 1 else default_review_path()
 
     try:
         with open(file_path) as f:

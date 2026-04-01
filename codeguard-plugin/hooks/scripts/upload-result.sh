@@ -2,7 +2,7 @@
 #
 # upload-result.sh
 #
-# Reads the review JSON from .codeguard/last-review.json and uploads it
+# Reads the review JSON from ~/.codeguard/<project>/last-review.json and uploads it
 # to the CodeGuard server. Called by the SubagentStop hook after ReviewAgent.
 #
 # Configuration is read from the plugin's settings.json (server.url and server.api_key).
@@ -11,7 +11,9 @@
 
 set -euo pipefail
 
-REVIEW_FILE=".codeguard/last-review.json"
+# --- Detect project name from git remote or directory basename ---
+PROJECT_NAME=$(git remote get-url origin 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(pwd)")
+REVIEW_FILE="${HOME}/.codeguard/${PROJECT_NAME}/last-review.json"
 
 # --- Check if review file exists ---
 if [ ! -f "$REVIEW_FILE" ]; then

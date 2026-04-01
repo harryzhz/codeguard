@@ -59,9 +59,14 @@ Parse the command arguments to determine review mode:
 
 ### Phase 2: Launch Review Agent
 
-1. Set environment variable `CODEGUARD_REVIEW_SCOPE` to the determined mode (`diff`, `all`, `branch`, or `commits`).
-2. Set environment variable `CODEGUARD_REVIEW_FILES` to the newline-separated list of files collected in Phase 1.
-3. Launch the `review-agent` sub-agent with these environment variables.
+1. Determine the project name for the review output path:
+   ```bash
+   PROJECT_NAME=$(git remote get-url origin 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(pwd)")
+   ```
+   The review file will be saved at `~/.codeguard/${PROJECT_NAME}/last-review.json`.
+2. Set environment variable `CODEGUARD_REVIEW_SCOPE` to the determined mode (`diff`, `all`, `branch`, or `commits`).
+3. Set environment variable `CODEGUARD_REVIEW_FILES` to the newline-separated list of files collected in Phase 1.
+4. Launch the `review-agent` sub-agent with these environment variables.
 
 ### Phase 2.5: Validate Review Output
 
@@ -69,12 +74,12 @@ After the review agent completes:
 
 1. Run the validation script:
    ```bash
-   python3 "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/validate-review.py" .codeguard/last-review.json
+   python3 "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/validate-review.py" ~/.codeguard/${PROJECT_NAME}/last-review.json
    ```
 2. If validation passes (prints `OK`), proceed to Phase 3.
 3. If validation fails, run the auto-fix script to repair the JSON in place:
    ```bash
-   python3 "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/fix-review.py" .codeguard/last-review.json
+   python3 "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/fix-review.py" ~/.codeguard/${PROJECT_NAME}/last-review.json
    ```
    Then validate again. If it passes, proceed to Phase 3. If it still fails, print `[CodeGuard] Review output validation failed. Errors:` followed by the validation errors, then stop.
 
@@ -82,7 +87,7 @@ After the review agent completes:
 
 After the review agent completes:
 
-1. Read `.codeguard/last-review.json` to get the review results.
+1. Read `~/.codeguard/${PROJECT_NAME}/last-review.json` to get the review results.
 2. If there are 0 findings, print "[CodeGuard] No issues found. Great job!" and stop.
 3. Display finding details grouped by severity, using sequential numbering across all findings:
 
@@ -115,7 +120,7 @@ After the review agent completes:
    - Each finding as a selectable option: `#N [severity] title — file:line`
    - A "Fix all" option
    - A "Skip for now" option
-5. If the user selects "Skip for now", print "[CodeGuard] Review complete. Findings saved to .codeguard/last-review.json" and stop.
+5. If the user selects "Skip for now", print "[CodeGuard] Review complete. Findings saved to ~/.codeguard/<project>/last-review.json"（使用实际项目名）and stop.
 
 ### Phase 4: Fix Selected Findings
 

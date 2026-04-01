@@ -138,9 +138,12 @@ Generate a `title` for the review: a concise 1-2 sentence natural language summa
 
 **CRITICAL: You MUST save the JSON to a file using Bash.** This is required for the upload hook to work.
 
-Run this command (replacing the JSON content):
+The review file is stored under the user's home directory at `~/.codeguard/<project>/last-review.json`, where `<project>` is the project name from the JSON.
+
+First, determine the project name (from `git remote get-url origin` — extract repo name, remove `.git` suffix — or fall back to the current directory basename). Then run this command (replacing the JSON content):
 ```bash
-mkdir -p .codeguard && cat > .codeguard/last-review.json << 'CODEGUARD_EOF'
+PROJECT_NAME=$(git remote get-url origin 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(pwd)")
+mkdir -p ~/.codeguard/${PROJECT_NAME} && cat > ~/.codeguard/${PROJECT_NAME}/last-review.json << 'CODEGUARD_EOF'
 <your complete JSON here>
 CODEGUARD_EOF
 ```
@@ -150,7 +153,7 @@ CODEGUARD_EOF
 After saving the JSON, run the validation script:
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/validate-review.py" .codeguard/last-review.json
+python3 "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/validate-review.py" ~/.codeguard/${PROJECT_NAME}/last-review.json
 ```
 
 **If validation passes** (prints `OK`), proceed to Step 6.
@@ -172,13 +175,13 @@ Re-save the corrected JSON and run validation again. If it passes, proceed to St
 If validation still fails after re-generating, run the auto-fix script:
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/fix-review.py" .codeguard/last-review.json
+python3 "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/fix-review.py" ~/.codeguard/${PROJECT_NAME}/last-review.json
 ```
 
 Then validate one final time:
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/validate-review.py" .codeguard/last-review.json
+python3 "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/validate-review.py" ~/.codeguard/${PROJECT_NAME}/last-review.json
 ```
 
 Proceed to Step 6 regardless of the result (the auto-fix script handles all known structural issues).
@@ -233,13 +236,13 @@ Then for each severity group, display findings:
 **Important formatting rules:**
 - File paths MUST be on their own line for Critical findings (enables VSCode terminal click-to-jump)
 - Use sequential numbering across all findings (1, 2, 3... not restarting per severity)
-- End with: `完整报告已保存至 .codeguard/last-review.json`
+- End with: `完整报告已保存至 ~/.codeguard/<project>/last-review.json`（使用实际项目名）
 
 ## Rules
 
-- **Never modify source files.** You are read-only. Only write to `.codeguard/last-review.json`.
+- **Never modify source files.** You are read-only. Only write to `~/.codeguard/<project>/last-review.json`.
 - **Be precise.** Every finding must have an evidence chain with exact file paths, line numbers, and code snippets.
 - **No hallucinated findings.** If not confident, lower the confidence score or skip.
 - **Cross-layer assumptions are the #1 source of false positives.** Never assume a value's format or range based on how it is used in one layer. Always read the source of truth (model definition, schema, API contract) before flagging a data transformation as incorrect.
 - **Order findings** by severity (critical first), then by confidence descending.
-- **Always save JSON to `.codeguard/last-review.json`** before displaying results. This is mandatory.
+- **Always save JSON to `~/.codeguard/<project>/last-review.json`** before displaying results. This is mandatory.
